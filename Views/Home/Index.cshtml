@@ -1,0 +1,161 @@
+﻿@model Skills.ViewModels.HomeIndexViewModel
+@{
+    ViewData["Title"] = "Skills";
+}
+
+@foreach(var x in Model.SkillsAvailable)
+{
+    <div>
+        @(x.SkillName)
+    </div>
+}
+<script>
+    function SkillModel(data)
+    {
+        var self = this;
+        self.Name = ko.observable(data.skillName);
+        
+        
+            self.ToProcess = ko.observableArray(ko.utils.arrayMap(data.toProcess, function(elem) {
+                    return elem.url;
+                }
+            )
+            );
+        
+        
+
+        self.UrlToAdd = ko.observable("");
+        self.AddUrlToProcess = function()
+        {
+            if(self.UrlToAdd())
+            {
+                $.ajax({
+                    type: "POST",
+                    url: "Home/AddUrlToProcess",
+                    data: {
+                        skill: self.Name(),
+                        url : self.UrlToAdd()
+                    }
+                    ,
+                    success: function(retrievedData) {
+
+                       
+                        self.ToProcess.push(retrievedData.url);
+                        self.UrlToAdd("");
+
+                    },
+                    dataType: "json"
+                });
+            }
+            
+        };
+
+    };
+
+
+    function AvailableSkillsViewModel(data)
+    {
+        var self = this;
+        if(data != null){
+            self.skills = ko.observableArray(
+                ko.utils.arrayMap(data, function(elem) {
+                    return new SkillModel(elem);
+                }
+            ));
+        }
+        else
+        {
+            self.skills = ko.observableArray([]);
+        }
+
+        self.newSkillName = ko.observable("");
+        self.AddNewSkill = function()
+        {
+            
+            var skillName = self.newSkillName();
+            var dataToSend = {
+                    skillName : skillName
+                };
+            $.ajax({
+                type: "POST",
+                url: "Home/NewSkill",
+                data: dataToSend,
+                success: function(retrievedData) {
+
+                    var newSkill = new SkillModel(retrievedData);
+                    self.skills.push(newSkill);
+                    self.newSkillName("");
+
+                },
+                dataType: "json"
+            });
+            
+        };
+
+        
+        self.RetrieveDataFromServer = function() {
+            $.ajax({
+                type: "POST",
+                url: "Home/GetSkillsAvailable",
+                data: {
+                    
+                },
+                success: function(data) {
+                    var toAdd = ko.utils.arrayMap(data, function(elem) {
+                        return new SkillModel(elem);
+                    });
+                    ko.utils.arrayPushAll(self.skills, toAdd);
+
+                },
+                dataType: "json"
+            });
+
+        };
+        
+
+    };
+
+    $(document).ready(function()
+    {
+        var viewModel = new AvailableSkillsViewModel();
+        ko.applyBindings(viewModel);
+        viewModel.RetrieveDataFromServer();
+    });
+</script>
+<div>
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    SkillName
+                </th>
+                <th>
+                    ToProcess
+                </th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: skills">
+            <tr>
+                <td data-bind="text: Name" ></td>
+                <td>
+                    <ul data-bind="foreach: ToProcess">
+                        <li data-bind="text: $data">
+
+                        </li>
+                    </ul>
+                    <div>
+                        <input type="text" data-bind="value: UrlToAdd" ></input>
+                        <button data-bind="click: AddUrlToProcess" >add url</button>
+                    </div>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+    </div>
+<div>
+    <input type="text" data-bind="value: newSkillName" ></input>
+    <button data-bind="click: AddNewSkill" >add skill</button>
+    </div>
+
+
