@@ -16,13 +16,20 @@
         self.Name = ko.observable(data.skillName);
         
         
-            self.ToProcess = ko.observableArray(ko.utils.arrayMap(data.toProcess, function(elem) {
+        self.ToProcess = ko.observableArray(
+            ko.utils.arrayMap(data.toProcess, function(elem) {
                     return elem.url;
                 }
             )
-            );
+        );
         
-        
+        self.ToProcessIsExpanded = ko.observable(false);
+        self.ExpandToProcess = function() {
+            self.ToProcessIsExpanded(true);
+        };
+        self.CollapseToProcess = function() {
+            self.ToProcessIsExpanded(false);
+        }
 
         self.UrlToAdd = ko.observable("");
         self.AddUrlToProcess = function()
@@ -138,15 +145,32 @@
             <tr>
                 <td data-bind="text: Name" ></td>
                 <td>
-                    <ul data-bind="foreach: ToProcess">
-                        <li data-bind="text: $data">
 
-                        </li>
-                    </ul>
-                    <div>
-                        <input type="text" data-bind="value: UrlToAdd" ></input>
-                        <button data-bind="click: AddUrlToProcess" >add url</button>
+                    <div data-bind="if: ToProcessIsExpanded">
+                        <ul data-bind="foreach: ToProcess">
+                            <li >
+                                <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a>
+
+                            </li>
+                        </ul>
+                        <div>
+                            <input type="text" data-bind="value: UrlToAdd" ></input>
+                            <button data-bind="click: AddUrlToProcess" >add url</button>
+                        </div>
+                        <button data-bind="click: CollapseToProcess">Collapse</button>
                     </div>
+                    <div data-bind="ifnot: ToProcessIsExpanded">
+                        <div data-bind="if: ToProcess().length > 0">
+                            To Process <span data-bind="text: ToProcess().length"></span>
+                            <button data-bind="click: ExpandToProcess" >Expand</button>
+                        </div>
+                        
+                        <div data-bind="if: (ToProcess().length == 0)">
+                            <button data-bind="click: ExpandToProcess" >Add some urls to process</button>
+                        </div>
+                    </div>
+                    
+                    
                 </td>
             </tr>
 
