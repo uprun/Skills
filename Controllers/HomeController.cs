@@ -10,6 +10,24 @@ namespace Skills.Controllers
 {
     public class HomeController : Controller
     {
+        [HttpPost]
+        public JsonResult ApplyMigrations()
+        {
+            using(var context = new SkillsContext())
+            {
+                
+                // if(context)
+                // foreach ( var skill in context.Skills)
+                // {
+                //     var node = context.Nodes.Add(new NodeModel ()
+                //     );
+                //     context.SaveChanges();
+                //     node.Entity.tags.Add(new TagModel)
+                // }
+            }
+            //return View(model);
+            return Json(null);
+        }
         public IActionResult Index()
         {
             var model = new ViewModels.HomeIndexViewModel();

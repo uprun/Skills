@@ -4,6 +4,7 @@ namespace Skills.Models
 {
     public class SkillsContext: DbContext
     {
+        public DbSet<VersionModel> VersionsApplied {get; set;}
         public DbSet<SkillModel> Skills {get; set;}
 
         public DbSet<NodeModel> Nodes {get; set;}
