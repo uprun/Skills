@@ -3,7 +3,9 @@ namespace Skills.Models
     public class LinkDTO
     {
         
-
+        public LinkDTO()
+        {
+        }
         public LinkDTO(LinkModel urlAdded)
         {
             this.Url = urlAdded.Url;
