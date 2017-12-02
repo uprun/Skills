@@ -10,9 +10,10 @@ using System;
 namespace Skills.Migrations
 {
     [DbContext(typeof(SkillsContext))]
-    partial class SkillsContextModelSnapshot : ModelSnapshot
+    [Migration("20171202101951_ConvertToNodeRepresentation")]
+    partial class ConvertToNodeRepresentation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
