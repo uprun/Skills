@@ -14,6 +14,7 @@
     {
         var self = this;
         self.Name = ko.observable(data.skillName);
+        self.id = ko.observable(data.nodeId);
         
         
         self.ToProcess = ko.observableArray(
@@ -40,7 +41,7 @@
                     type: "POST",
                     url: "Home/AddUrlToProcess",
                     data: {
-                        skill: self.Name(),
+                        HostNodeId: self.id(),
                         url : self.UrlToAdd()
                     }
                     ,

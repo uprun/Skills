@@ -6,10 +6,6 @@ namespace Skills.Models
         public LinkDTO()
         {
         }
-        public LinkDTO(LinkModel urlAdded)
-        {
-            this.Url = urlAdded.Url;
-        }
 
         public string Url {get; set;}
     }

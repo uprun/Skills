@@ -5,7 +5,7 @@ namespace Skills.Models
 {
     public class SkillDTO
     {
-        public int MinutesSpent {get; set;}
+        public long NodeId {get; set;}
 
         public string SkillName {get; set;}
 

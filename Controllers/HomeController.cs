@@ -10,6 +10,42 @@ namespace Skills.Controllers
 {
     public class HomeController : Controller
     {
+        private NodeModel CreateNode() 
+        {
+            NodeModel result = null;
+            using(var context = new SkillsContext())
+            {
+                var mainNode = context.Nodes.Add(new NodeModel 
+                            {
+                                tags = new List<TagModel>()
+                            }
+                        );
+                context.SaveChanges();
+                result = mainNode.Entity;
+            }
+            return result;
+        }
+
+        private NodeModel AddTagToNode(long nodeId, string tag, string value)
+        {
+            NodeModel result = null;
+            using(var context = new SkillsContext())
+            {
+                var nodeTags = context.Nodes.Where(x => x.id == nodeId).Select(x => x.tags).First();
+                nodeTags.Add(new TagModel
+                            {
+                                tag = tag,
+                                value = value
+                            });
+                context.SaveChanges();
+                var mainNode = context.Nodes.First( x => x.id == nodeId);
+                result = mainNode;
+            }
+            return result;
+        }
+
+
+
         [HttpPost]
         public JsonResult ApplyMigrations()
         {
@@ -125,8 +161,8 @@ namespace Skills.Controllers
                     .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null)
                     .Select(x => new SkillDTO 
                     {
+                        NodeId = x.id,
                         SkillName = x.tags.FirstOrDefault(t => t.tag == "name").value,
-                        MinutesSpent = 0,
                         ToProcess = x.tags
                             .Where(t => t.tag == "rid:toProcess")
                             .Select(t => new LinkDTO{ Url = context.Nodes.First(n => n.id.ToString() == t.value).tags.FirstOrDefault(at => at.tag == "url").value } ).ToList()
@@ -137,31 +173,16 @@ namespace Skills.Controllers
         }
 
         [HttpPost]
-        public JsonResult AddUrlToProcess(string skill, string url)
+        public JsonResult AddUrlToProcess(long HostNodeId, string url)
         {
-            /// this can be auto-generated like "add if not exists"
-            ///
-            using(var context = new SkillsContext())
+            var urlNode = CreateNode();
+            AddTagToNode(urlNode.id, "type", "url");
+            AddTagToNode(urlNode.id, "url", url);
+            AddTagToNode(HostNodeId, "rid:toProcess", urlNode.id.ToString());
+            return Json(new LinkDTO 
             {
-                var toProcessOfFoundSkill = context.Skills.Where(x => x.SkillName == skill ).Select(x => x.ToProcess).FirstOrDefault();
-                if(toProcessOfFoundSkill != null)
-                {                     
-                    if(!toProcessOfFoundSkill.Exists(x => x.Url == url))
-                    {
-                        var urlAdded = new LinkModel
-                        {
-                            Url = url
-
-                        };
-                         toProcessOfFoundSkill.Add(urlAdded);
-                         context.SaveChanges();
-                         return Json(new LinkDTO(urlAdded));
-
-                    }
-                        
-                }
-            }
-            return null;
+                Url = url
+            });
         }
     }
 }
