@@ -121,12 +121,16 @@ namespace Skills.Controllers
 
             using(var context = new SkillsContext())
             {
-                skills =  context.Skills.Select(x => new SkillDTO 
-                {
-                    SkillName = x.SkillName,
-                    MinutesSpent = x.MinutesSpent,
-                    ToProcess = x.ToProcess.Select(y => new LinkDTO(y)).ToList()
-                }).ToArray();
+                skills =  context.Nodes
+                    .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null)
+                    .Select(x => new SkillDTO 
+                    {
+                        SkillName = x.tags.FirstOrDefault(t => t.tag == "name").value,
+                        MinutesSpent = 0,
+                        ToProcess = x.tags
+                            .Where(t => t.tag == "rid:toProcess")
+                            .Select(t => new LinkDTO{ Url = context.Nodes.First(n => n.id.ToString() == t.value).tags.FirstOrDefault(at => at.tag == "url").value } ).ToList()
+                    }).ToArray();
             }
             
             return Json( skills );
@@ -158,13 +162,6 @@ namespace Skills.Controllers
                 }
             }
             return null;
-        }
-
-        
-
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }
