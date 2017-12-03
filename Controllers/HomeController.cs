@@ -10,11 +10,10 @@ namespace Skills.Controllers
 {
     public class HomeController : Controller
     {
-        private NodeModel CreateNode() 
+        private NodeModel CreateNode(SkillsContext context) 
         {
             NodeModel result = null;
-            using(var context = new SkillsContext())
-            {
+            
                 var mainNode = context.Nodes.Add(new NodeModel 
                             {
                                 tags = new List<TagModel>()
@@ -22,15 +21,15 @@ namespace Skills.Controllers
                         );
                 context.SaveChanges();
                 result = mainNode.Entity;
-            }
+            
             return result;
         }
 
-        private NodeModel AddTagToNode(long nodeId, string tag, string value)
+        private NodeModel AddTagToNode(SkillsContext context, long nodeId, string tag, string value)
         {
             NodeModel result = null;
-            using(var context = new SkillsContext())
-            {
+            
+            
                 var nodeTags = context.Nodes.Where(x => x.id == nodeId).Select(x => x.tags).First();
                 nodeTags.Add(new TagModel
                             {
@@ -40,7 +39,7 @@ namespace Skills.Controllers
                 context.SaveChanges();
                 var mainNode = context.Nodes.First( x => x.id == nodeId);
                 result = mainNode;
-            }
+            
             return result;
         }
 
@@ -112,6 +111,23 @@ namespace Skills.Controllers
                     context.SaveChanges();
 
                 }
+
+                if(context.VersionsApplied.FirstOrDefault(x => x.VersionApplied == "nodesAddToProcessField_attempt#1") == null)
+                {
+                    foreach ( var node in context.Nodes.Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null))
+                    {
+                        AddTagToNode(context, node.id, "field:list", "toProcess");
+                        
+                    }
+
+                    context.VersionsApplied.Add( new VersionModel
+                    { 
+                        VersionApplied = "nodesAddToProcessField_attempt#1",
+                        TimeApplied = DateTime.Now
+                    });
+                    context.SaveChanges();
+
+                }
                 
             }
             return Json(null);
@@ -164,7 +180,7 @@ namespace Skills.Controllers
                         NodeId = x.id,
                         SkillName = x.tags.FirstOrDefault(t => t.tag == "name").value,
                         ToProcess = x.tags
-                            .Where(t => t.tag == "rid:toProcess")
+                            .Where(t => t.tag == "rid:toProcess" && t.value != "")
                             .Select(t => new LinkDTO{ Url = context.Nodes.First(n => n.id.ToString() == t.value).tags.FirstOrDefault(at => at.tag == "url").value } ).ToList()
                     }).ToArray();
             }
@@ -175,10 +191,14 @@ namespace Skills.Controllers
         [HttpPost]
         public JsonResult AddUrlToProcess(long HostNodeId, string url)
         {
-            var urlNode = CreateNode();
-            AddTagToNode(urlNode.id, "type", "url");
-            AddTagToNode(urlNode.id, "url", url);
-            AddTagToNode(HostNodeId, "rid:toProcess", urlNode.id.ToString());
+            using(var context = new SkillsContext())
+            {
+                var urlNode = CreateNode(context);
+                AddTagToNode(context, urlNode.id, "type", "url");
+                AddTagToNode(context, urlNode.id, "url", url);
+                AddTagToNode(context, HostNodeId, "rid:toProcess", urlNode.id.ToString());
+            }
+            
             return Json(new LinkDTO 
             {
                 Url = url
