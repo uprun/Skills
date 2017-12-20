@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Skills.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Skills.Controllers
 {
@@ -134,13 +135,8 @@ namespace Skills.Controllers
         }
         public IActionResult Index()
         {
-            var model = new ViewModels.HomeIndexViewModel();
-
-            if(model.SkillsAvailable == null)
-            {
-                model.SkillsAvailable = new SkillDTO[0];
-            }
-            return View(model);
+            
+            return View();
         }
 
         public SkillModel NewSkill(string skillName)
@@ -169,20 +165,37 @@ namespace Skills.Controllers
         [HttpPost]
         public JsonResult GetSkillsAvailable()
         {
-            SkillDTO[] skills = null;
+            NodeModel[] skills = null;
 
             using(var context = new SkillsContext())
             {
+                
                 skills =  context.Nodes
+                    .Include(n => n.tags)
                     .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null)
-                    .Select(x => new SkillDTO 
-                    {
-                        NodeId = x.id,
-                        SkillName = x.tags.FirstOrDefault(t => t.tag == "name").value,
-                        ToProcess = x.tags
-                            .Where(t => t.tag == "rid:toProcess" && t.value != "")
-                            .Select(t => new LinkDTO{ Url = context.Nodes.First(n => n.id.ToString() == t.value).tags.FirstOrDefault(at => at.tag == "url").value } ).ToList()
-                    }).ToArray();
+                    // .ToList()
+                    // .Select(x => 
+                    // {
+                    //     var res = x.tags
+                    //         .GroupBy(t => t.tag)
+                    //         .Select(group => 
+                                 
+                    //                 (
+                    //                     group.Key,
+                    //                     group
+                    //                         .Select(gt => gt.value)
+                    //                         .ToList()
+                    //                  )
+                    //                 )
+                    //         .ToList();
+                            
+                    //     return new NodeDTO 
+                    //     {
+                    //         NodeId = x.id,
+                    //         tagsCombined = res
+                    //     };
+                    // })
+                    .ToArray();
             }
             
             return Json( skills );
@@ -199,10 +212,10 @@ namespace Skills.Controllers
                 AddTagToNode(context, HostNodeId, "rid:toProcess", urlNode.id.ToString());
             }
             
-            return Json(new LinkDTO 
-            {
-                Url = url
-            });
+            return Json(
+                (
+                 url
+            ));
         }
     }
 }

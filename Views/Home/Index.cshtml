@@ -1,25 +1,15 @@
-﻿@model Skills.ViewModels.HomeIndexViewModel
-@{
+﻿@{
     ViewData["Title"] = "Skills";
-}
-
-@foreach(var x in Model.SkillsAvailable)
-{
-    <div>
-        @(x.SkillName)
-    </div>
 }
 <script>
     function SkillModel(data)
     {
         var self = this;
-        self.Name = ko.observable(data.skillName);
-        self.id = ko.observable(data.nodeId);
+        self.id = ko.observable(data.id);
         
-        
-        self.ToProcess = ko.observableArray(
-            ko.utils.arrayMap(data.toProcess, function(elem) {
-                    return elem.url;
+        self.tags = ko.observableArray(
+            ko.utils.arrayMap(data.tags, function(elem) {
+                    return elem.tag + '=' + elem.value;
                 }
             )
         );
@@ -144,11 +134,11 @@
         </thead>
         <tbody data-bind="foreach: skills">
             <tr>
-                <td data-bind="text: Name" ></td>
+                <td >###</td>
                 <td>
 
                     <div data-bind="if: ToProcessIsExpanded">
-                        <ul data-bind="foreach: ToProcess">
+                        <ul data-bind="foreach: tags">
                             <li >
                                 <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a>
 
@@ -161,12 +151,12 @@
                         <button data-bind="click: CollapseToProcess">Collapse</button>
                     </div>
                     <div data-bind="ifnot: ToProcessIsExpanded">
-                        <div data-bind="if: ToProcess().length > 0">
-                            To Process <span data-bind="text: ToProcess().length"></span>
+                        <div data-bind="if: tags().length > 0">
+                            To Process <span data-bind="text: tags().length"></span>
                             <button data-bind="click: ExpandToProcess" >Expand</button>
                         </div>
                         
-                        <div data-bind="if: (ToProcess().length == 0)">
+                        <div data-bind="if: (tags().length == 0)">
                             <button data-bind="click: ExpandToProcess" >Add some urls to process</button>
                         </div>
                     </div>
