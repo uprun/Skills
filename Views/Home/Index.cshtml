@@ -2,6 +2,25 @@
     ViewData["Title"] = "Skills";
 }
 <script>
+    function applyMigrations()
+    {
+        $.ajax({
+                type: "POST",
+                url: "Home/ApplyMigrations",
+                success: function(retrievedData) {
+
+                    alert('success');
+
+                },
+                error:function(){
+                    alert('error');
+
+                },
+                dataType: "json"
+            });
+
+    };
+    
     function SkillModel(data)
     {
         var self = this;
@@ -171,6 +190,11 @@
 <div>
     <input type="text" data-bind="value: newSkillName" ></input>
     <button data-bind="click: AddNewSkill" >add skill</button>
+    <br>
+    <br>
+    <br>
+    <br>
+    <button data-bind="click: applyMigrations" >apply Migrations</button>
     </div>
 
 

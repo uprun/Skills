@@ -129,6 +129,38 @@ namespace Skills.Controllers
                     context.SaveChanges();
 
                 }
+
+                if(context.VersionsApplied.FirstOrDefault(x => x.VersionApplied == "default_skills_node_types_attempt#1") == null)
+                {
+                    {
+                        var urlNode = CreateNode(context);
+                        AddTagToNode(context, urlNode.id, "type", "instanceTemplate");
+                        AddTagToNode(context, urlNode.id, "%type", "skill");
+                        AddTagToNode(context, urlNode.id, "templateVersion", "1.1.0");
+                        AddTagToNode(context, urlNode.id, "field:list", "toProcess");
+                        AddTagToNode(context, urlNode.id, "name", "");
+                        AddTagToNode(context, urlNode.id, "rid:previousVersion", "none");
+                    }
+
+                    {
+                        var urlNode = CreateNode(context);
+                        AddTagToNode(context, urlNode.id, "type", "instanceTemplate");
+                        AddTagToNode(context, urlNode.id, "%type", "url");
+                        AddTagToNode(context, urlNode.id, "templateVersion", "1.1.0");
+                        AddTagToNode(context, urlNode.id, "url", "");
+                        AddTagToNode(context, urlNode.id, "rid:previousVersion", "none");
+                    }
+                    
+                    
+
+                    context.VersionsApplied.Add( new VersionModel
+                    { 
+                        VersionApplied = "default_skills_node_types_attempt#1",
+                        TimeApplied = DateTime.Now
+                    });
+                    context.SaveChanges();
+
+                }
                 
             }
             return Json(null);
@@ -173,28 +205,6 @@ namespace Skills.Controllers
                 skills =  context.Nodes
                     .Include(n => n.tags)
                     .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null)
-                    // .ToList()
-                    // .Select(x => 
-                    // {
-                    //     var res = x.tags
-                    //         .GroupBy(t => t.tag)
-                    //         .Select(group => 
-                                 
-                    //                 (
-                    //                     group.Key,
-                    //                     group
-                    //                         .Select(gt => gt.value)
-                    //                         .ToList()
-                    //                  )
-                    //                 )
-                    //         .ToList();
-                            
-                    //     return new NodeDTO 
-                    //     {
-                    //         NodeId = x.id,
-                    //         tagsCombined = res
-                    //     };
-                    // })
                     .ToArray();
             }
             
