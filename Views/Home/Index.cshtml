@@ -21,14 +21,22 @@
 
     };
     
-    function SkillModel(data)
+    function TagModel(data)
+    {
+        var self = this;
+        self.id = ko.observable(data.id);
+        self.tag = ko.observable(data.tag);
+        self.value = ko.observable(data.value);
+    };
+
+    function NodeModel(data)
     {
         var self = this;
         self.id = ko.observable(data.id);
         
         self.tags = ko.observableArray(
             ko.utils.arrayMap(data.tags, function(elem) {
-                    return elem.tag + '=' + elem.value;
+                    return new TagModel(elem);
                 }
             )
         );
@@ -76,7 +84,7 @@
         if(data != null){
             self.skills = ko.observableArray(
                 ko.utils.arrayMap(data, function(elem) {
-                    return new SkillModel(elem);
+                    return new NodeModel(elem);
                 }
             ));
         }
@@ -99,7 +107,7 @@
                 data: dataToSend,
                 success: function(retrievedData) {
 
-                    var newSkill = new SkillModel(retrievedData);
+                    var newSkill = new NodeModel(retrievedData);
                     self.skills.push(newSkill);
                     self.newSkillName("");
 
@@ -119,7 +127,7 @@
                 },
                 success: function(data) {
                     var toAdd = ko.utils.arrayMap(data, function(elem) {
-                        return new SkillModel(elem);
+                        return new NodeModel(elem);
                     });
                     ko.utils.arrayPushAll(self.skills, toAdd);
 
@@ -153,14 +161,22 @@
         </thead>
         <tbody data-bind="foreach: skills">
             <tr>
-                <td >###</td>
+                <td >
+                    <span data-bind="text: '#'"></span>
+                    <span data-bind="text: id"></span>
+                </td>
                 <td>
 
                     <div data-bind="if: ToProcessIsExpanded">
                         <ul data-bind="foreach: tags">
                             <li >
-                                <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a>
-
+                                <!-- <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a> -->
+                                <span data-bind="text: 'id'"></span>
+                                <span data-bind="text: id"></span>
+                                <span data-bind="text: 'tag'"></span>
+                                <span data-bind="text: tag"></span>
+                                <span data-bind="text: 'value'"></span>
+                                <span data-bind="text: value"></span>
                             </li>
                         </ul>
                         <div>
