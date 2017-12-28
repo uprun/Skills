@@ -212,6 +212,23 @@ namespace Skills.Controllers
         }
 
         [HttpPost]
+        public JsonResult GetTemplatesAvailable()
+        {
+            NodeModel[] skills = null;
+
+            using(var context = new SkillsContext())
+            {
+                
+                skills =  context.Nodes
+                    .Include(n => n.tags)
+                    .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "instanceTemplate") != null)
+                    .ToArray();
+            }
+            
+            return Json( skills );
+        }
+
+        [HttpPost]
         public JsonResult AddUrlToProcess(long HostNodeId, string url)
         {
             using(var context = new SkillsContext())

@@ -40,6 +40,13 @@
                 }
             )
         );
+
+        var match = ko.utils.arrayFirst(self.tags(), function(item) {
+            return item.tag() == "name";
+        });
+        if(match){
+            self.name = ko.observable(match.value());
+        }
         
         self.ToProcessIsExpanded = ko.observable(false);
         self.ExpandToProcess = function() {
@@ -93,6 +100,8 @@
             self.skills = ko.observableArray([]);
         }
 
+        self.templates = ko.observableArray([]);
+
         self.newSkillName = ko.observable("");
         self.AddNewSkill = function()
         {
@@ -136,6 +145,25 @@
             });
 
         };
+
+        self.RetrieveTemplatesFromServer = function() {
+            $.ajax({
+                type: "POST",
+                url: "Home/GetTemplatesAvailable",
+                data: {
+                    
+                },
+                success: function(data) {
+                    var toAdd = ko.utils.arrayMap(data, function(elem) {
+                        return new NodeModel(elem);
+                    });
+                    ko.utils.arrayPushAll(self.templates, toAdd);
+
+                },
+                dataType: "json"
+            });
+
+        };
         
 
     };
@@ -145,6 +173,7 @@
         var viewModel = new AvailableSkillsViewModel();
         ko.applyBindings(viewModel);
         viewModel.RetrieveDataFromServer();
+        viewModel.RetrieveTemplatesFromServer();
     });
 </script>
 <div>
@@ -164,6 +193,8 @@
                 <td >
                     <span data-bind="text: '#'"></span>
                     <span data-bind="text: id"></span>
+                    <span data-bind="text: ','"></span>
+                    <span data-bind="text: name"></span>
                 </td>
                 <td>
 
@@ -202,7 +233,7 @@
 
         </tbody>
     </table>
-    </div>
+</div>
 <div>
     <input type="text" data-bind="value: newSkillName" ></input>
     <button data-bind="click: AddNewSkill" >add skill</button>
@@ -211,6 +242,65 @@
     <br>
     <br>
     <button data-bind="click: applyMigrations" >apply Migrations</button>
-    </div>
+</div>
+<div>
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    templates
+                </th>
+                <th>
+                    fields
+                </th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: templates">
+            <tr>
+                <td >
+                    <span data-bind="text: '#'"></span>
+                    <span data-bind="text: id"></span>
+                    <span data-bind="text: ','"></span>
+                    <span data-bind="text: name"></span>
+                </td>
+                <td>
+
+                    <div data-bind="if: ToProcessIsExpanded">
+                        <ul data-bind="foreach: tags">
+                            <li >
+                                <!-- <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a> -->
+                                <span data-bind="text: 'id'"></span>
+                                <span data-bind="text: id"></span>
+                                <span data-bind="text: 'tag'"></span>
+                                <span data-bind="text: tag"></span>
+                                <span data-bind="text: 'value'"></span>
+                                <span data-bind="text: value"></span>
+                            </li>
+                        </ul>
+                        <div>
+                            <input type="text" data-bind="value: UrlToAdd" ></input>
+                            <button data-bind="click: AddUrlToProcess" >add url</button>
+                        </div>
+                        <button data-bind="click: CollapseToProcess">Collapse</button>
+                    </div>
+                    <div data-bind="ifnot: ToProcessIsExpanded">
+                        <div data-bind="if: tags().length > 0">
+                            To Process <span data-bind="text: tags().length"></span>
+                            <button data-bind="click: ExpandToProcess" >Expand</button>
+                        </div>
+                        
+                        <div data-bind="if: (tags().length == 0)">
+                            <button data-bind="click: ExpandToProcess" >Add some urls to process</button>
+                        </div>
+                    </div>
+                    
+                    
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+
 
 
