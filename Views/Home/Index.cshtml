@@ -177,28 +177,18 @@
     });
 </script>
 <div>
-    <table>
-        <thead>
-            <tr>
-                <th>
-                    SkillName
-                </th>
-                <th>
-                    ToProcess
-                </th>
-            </tr>
-        </thead>
-        <tbody data-bind="foreach: skills">
-            <tr>
-                <td >
+    
+        
+        <ul data-bind="foreach: skills">
+            <li>
+                <span>
                     <span data-bind="text: '#'"></span>
                     <span data-bind="text: id"></span>
                     <span data-bind="text: ','"></span>
                     <span data-bind="text: name"></span>
-                </td>
-                <td>
-
-                    <div data-bind="if: ToProcessIsExpanded">
+                </span>
+                <span>
+                    <span data-bind="if: ToProcessIsExpanded">
                         <ul data-bind="foreach: tags">
                             <li >
                                 <!-- <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a> -->
@@ -215,24 +205,20 @@
                             <button data-bind="click: AddUrlToProcess" >add url</button>
                         </div>
                         <button data-bind="click: CollapseToProcess">Collapse</button>
-                    </div>
-                    <div data-bind="ifnot: ToProcessIsExpanded">
+                    </span>
+                    <span data-bind="ifnot: ToProcessIsExpanded">
                         <div data-bind="if: tags().length > 0">
                             To Process <span data-bind="text: tags().length"></span>
                             <button data-bind="click: ExpandToProcess" >Expand</button>
                         </div>
-                        
                         <div data-bind="if: (tags().length == 0)">
                             <button data-bind="click: ExpandToProcess" >Add some urls to process</button>
                         </div>
-                    </div>
-                    
-                    
-                </td>
-            </tr>
-
-        </tbody>
-    </table>
+                    </span>
+                </span>
+            </li>
+        </ul>
+    
 </div>
 <div>
     <input type="text" data-bind="value: newSkillName" ></input>

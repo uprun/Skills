@@ -26,6 +26,19 @@ namespace Skills.Controllers
             return result;
         }
 
+
+
+        [HttpPost]
+        public JsonResult MakeNewNode()
+        {
+            NodeModel result = null;
+            using(var context = new SkillsContext())
+            {
+                result = CreateNode(context);
+            }
+            return Json(result);
+        }
+
         private NodeModel AddTagToNode(SkillsContext context, long nodeId, string tag, string value)
         {
             NodeModel result = null;
@@ -43,8 +56,17 @@ namespace Skills.Controllers
             
             return result;
         }
-
-
+        
+        [HttpPost]
+        public JsonResult AddTag(NodeModel model, string tag, string value)
+        {
+            NodeModel result = null;
+            using(var context = new SkillsContext())
+            {
+                result = AddTagToNode(context, model.id, tag, value);
+            }
+            return Json(result);
+        }
 
         [HttpPost]
         public JsonResult ApplyMigrations()
@@ -171,29 +193,6 @@ namespace Skills.Controllers
             return View();
         }
 
-        public SkillModel NewSkill(string skillName)
-        {
-            SkillModel toReturn = null;
-            using(var context = new SkillsContext())
-            {
-                var result = context.Skills.FirstOrDefault(x => x.SkillName == skillName);
-                if(result == null)
-                {
-                    toReturn = new SkillModel
-                    {
-                        SkillName = skillName,
-                        MinutesSpent = 0
-
-                    };
-                    var result2 = context.Skills.Add(toReturn);
-                    context.SaveChanges();
-                    toReturn =  result2.Entity;
-
-                }
-            }
-            return toReturn;
-        }
-
         [HttpPost]
         public JsonResult GetSkillsAvailable()
         {
@@ -226,6 +225,41 @@ namespace Skills.Controllers
             }
             
             return Json( skills );
+        }
+
+        [HttpPost]
+        public JsonResult CreateNodeFromTemplate(string templateName)
+        {
+            using(var context = new SkillsContext())
+            {
+                var templateNode = context.Nodes
+                    .Include(n => n.tags)
+                    .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "instanceTemplate") != null &&
+                        n.tags.FirstOrDefault(t => t.tag == "%type" && t.value == templateName) != null
+                        )
+                    .OrderByDescending(n => n.id)
+                    .FirstOrDefault();
+                NodeModel createdNode = null;
+                if(templateNode != null )
+                {
+                    createdNode = CreateNode(context);
+                    foreach(var tag in templateNode.tags)
+                    {
+                        if(tag.tag == "%type")
+                        {
+                            AddTagToNode(context, createdNode.id, "type", tag.value);
+                        }
+                        else
+                        {
+                            if(tag.tag != "type")
+                            {
+                                AddTagToNode(context, createdNode.id,tag.tag, tag.value);
+                            }
+                        }
+                    }
+                }
+                return Json(createdNode);
+            }
         }
 
         [HttpPost]
