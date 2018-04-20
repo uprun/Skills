@@ -39,8 +39,11 @@ namespace Skills.Controllers
             return Json(result);
         }
 
+
+        
         private NodeModel AddTagToNode(SkillsContext context, long nodeId, string tag, string value)
         {
+            //it definitely should create a new version of node
             NodeModel result = null;
             
             
@@ -56,6 +59,37 @@ namespace Skills.Controllers
             
             return result;
         }
+
+        private NodeModel CopyNode(SkillsContext context, long nodeId)
+        {// TODO: fix this
+            var nodeSource = context
+                .Nodes
+                .Include(n => n.tags)
+                .FirstOrDefault(x => x.id == nodeId);
+            
+            if(nodeSource == null)
+            {
+                throw new IndexOutOfRangeException($"Provided node id \"{nodeId}\" is not available.");
+            }
+
+            var mainNode = context
+                .Nodes
+                .Add(
+                    new NodeModel 
+                    {
+                        tags = nodeSource.tags.Select(x => 
+                            new TagModel
+                            {
+                                tag = x.tag,
+                                value = x.value 
+                            }
+                        )
+                        .ToList()
+                    }
+                );
+            context.SaveChanges();
+            return mainNode.Entity;
+        }
         
         [HttpPost]
         public JsonResult AddTag(NodeModel model, string tag, string value)
@@ -64,6 +98,17 @@ namespace Skills.Controllers
             using(var context = new SkillsContext())
             {
                 result = AddTagToNode(context, model.id, tag, value);
+            }
+            return Json(result);
+        }
+
+        [HttpPost]
+        public JsonResult Copy(NodeModel model)
+        {
+            NodeModel result = null;
+            using(var context = new SkillsContext())
+            {
+                result = CopyNode(context, model.id);
             }
             return Json(result);
         }
@@ -183,6 +228,20 @@ namespace Skills.Controllers
                     context.SaveChanges();
 
                 }
+                if(context.VersionsApplied.FirstOrDefault(x => x.VersionApplied == "change_node_references") == null)
+                {
+                    
+                    
+                    
+
+                    context.VersionsApplied.Add( new VersionModel
+                    { 
+                        VersionApplied = "change_node_references",
+                        TimeApplied = DateTime.Now
+                    });
+                    context.SaveChanges();
+
+                }
                 
             }
             return Json(null);
@@ -245,18 +304,13 @@ namespace Skills.Controllers
                     createdNode = CreateNode(context);
                     foreach(var tag in templateNode.tags)
                     {
-                        if(tag.tag == "%type")
+                        if(tag.tag.StartsWith("template:"))
                         {
-                            AddTagToNode(context, createdNode.id, "type", tag.value);
-                        }
-                        else
-                        {
-                            if(tag.tag != "type")
-                            {
-                                AddTagToNode(context, createdNode.id,tag.tag, tag.value);
-                            }
+                            string templateTag = tag.tag.Substring("template:".Length);
+                            AddTagToNode(context, createdNode.id, templateTag, tag.value);
                         }
                     }
+                    AddTagToNode(context, createdNode.id, "reference:type", templateNode.id.ToString());
                 }
                 return Json(createdNode);
             }

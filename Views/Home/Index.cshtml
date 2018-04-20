@@ -47,6 +47,13 @@
         if(match){
             self.name = ko.observable(match.value());
         }
+        var templateTypeSearch = ko.utils.arrayFirst(self.tags(), function(item) {
+            return item.tag() == "%type";
+        });
+        if(templateTypeSearch) {
+            self.templateType = ko.observable(templateTypeSearch.value());
+        }
+
         
         self.ToProcessIsExpanded = ko.observable(false);
         self.ExpandToProcess = function() {
@@ -81,6 +88,15 @@
             }
             
         };
+
+        self.RawViewIsEnabled = ko.observable(false);
+        self.EnableRawView = function(){
+            self.RawViewIsEnabled(true);
+        };
+        self.DisableRawView = function() {
+            self.RawViewIsEnabled(false);
+        };
+
 
     };
 
@@ -164,6 +180,42 @@
             });
 
         };
+
+        self.CreateNodeFromTemplate = function(data) {
+            var toSend = data.templateType();
+            $.ajax({
+                type: "POST",
+                url: "Home/CreateNodeFromTemplate",
+                data: {
+                    templateName: toSend
+                },
+                success: function(data) {
+                    var toAdd = new NodeModel(data);
+                    self.skills.push(toAdd);
+
+                },
+                dataType: "json"
+            });
+
+        };
+
+        self.CopyNode = function(data) {
+            var toSend = ko.toJSON(data);
+            $.ajax({
+                type: "POST",
+                url: "Home/CreateNodeFromTemplate",
+                data: {
+                    templateName: toSend
+                },
+                success: function(data) {
+                    var toAdd = new NodeModel(data);
+                    self.skills.push(toAdd);
+
+                },
+                dataType: "json"
+            });
+
+        };
         
 
     };
@@ -177,8 +229,6 @@
     });
 </script>
 <div>
-    
-        
         <ul data-bind="foreach: skills">
             <li>
                 <span>
@@ -188,32 +238,28 @@
                     <span data-bind="text: name"></span>
                 </span>
                 <span>
-                    <span data-bind="if: ToProcessIsExpanded">
+                    <span data-bind="ifnot: RawViewIsEnabled">
+                        <button data-bind="click: EnableRawView" >View Raw</button>
+                    </span>
+                    <span data-bind="if: RawViewIsEnabled">
                         <ul data-bind="foreach: tags">
                             <li >
                                 <!-- <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a> -->
-                                <span data-bind="text: 'id'"></span>
+                                <span data-bind="text: '#'"></span>
                                 <span data-bind="text: id"></span>
-                                <span data-bind="text: 'tag'"></span>
+                                <span data-bind="text: '{'"></span>
                                 <span data-bind="text: tag"></span>
-                                <span data-bind="text: 'value'"></span>
+                                <span data-bind="text: '} -> {'"></span>
                                 <span data-bind="text: value"></span>
+                                <span data-bind="text: '}'"></span>
                             </li>
                         </ul>
-                        <div>
-                            <input type="text" data-bind="value: UrlToAdd" ></input>
-                            <button data-bind="click: AddUrlToProcess" >add url</button>
-                        </div>
-                        <button data-bind="click: CollapseToProcess">Collapse</button>
                     </span>
-                    <span data-bind="ifnot: ToProcessIsExpanded">
-                        <div data-bind="if: tags().length > 0">
-                            To Process <span data-bind="text: tags().length"></span>
-                            <button data-bind="click: ExpandToProcess" >Expand</button>
-                        </div>
-                        <div data-bind="if: (tags().length == 0)">
-                            <button data-bind="click: ExpandToProcess" >Add some urls to process</button>
-                        </div>
+                    <span data-bind="if: RawViewIsEnabled">
+                        <button data-bind="click: DisableRawView" >Collapse Raw</button>
+                    </span>
+                    <span data-bind="if: RawViewIsEnabled">
+                        <button data-bind="click: $root.CopyNode" >Copy Node</button>
                     </span>
                 </span>
             </li>
@@ -230,62 +276,44 @@
     <button data-bind="click: applyMigrations" >apply Migrations</button>
 </div>
 <div>
-    <table>
-        <thead>
-            <tr>
-                <th>
-                    templates
-                </th>
-                <th>
-                    fields
-                </th>
-            </tr>
-        </thead>
-        <tbody data-bind="foreach: templates">
-            <tr>
-                <td >
+    <ul data-bind="foreach: templates">
+            <li>
+                <span>
                     <span data-bind="text: '#'"></span>
                     <span data-bind="text: id"></span>
                     <span data-bind="text: ','"></span>
                     <span data-bind="text: name"></span>
-                </td>
-                <td>
-
-                    <div data-bind="if: ToProcessIsExpanded">
+                    <span data-bind="text: templateType"></span>
+                </span>
+                
+                <span>
+                    <span data-bind="ifnot: RawViewIsEnabled">
+                        <button data-bind="click: EnableRawView" >View Raw</button>
+                    </span>
+                    
+                    <span data-bind="if: RawViewIsEnabled">
                         <ul data-bind="foreach: tags">
                             <li >
                                 <!-- <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a> -->
-                                <span data-bind="text: 'id'"></span>
+                                <span data-bind="text: '#'"></span>
                                 <span data-bind="text: id"></span>
-                                <span data-bind="text: 'tag'"></span>
+                                <span data-bind="text: '{'"></span>
                                 <span data-bind="text: tag"></span>
-                                <span data-bind="text: 'value'"></span>
+                                <span data-bind="text: '} -> {'"></span>
                                 <span data-bind="text: value"></span>
+                                <span data-bind="text: '}'"></span>
                             </li>
                         </ul>
-                        <div>
-                            <input type="text" data-bind="value: UrlToAdd" ></input>
-                            <button data-bind="click: AddUrlToProcess" >add url</button>
-                        </div>
-                        <button data-bind="click: CollapseToProcess">Collapse</button>
-                    </div>
-                    <div data-bind="ifnot: ToProcessIsExpanded">
-                        <div data-bind="if: tags().length > 0">
-                            To Process <span data-bind="text: tags().length"></span>
-                            <button data-bind="click: ExpandToProcess" >Expand</button>
-                        </div>
-                        
-                        <div data-bind="if: (tags().length == 0)">
-                            <button data-bind="click: ExpandToProcess" >Add some urls to process</button>
-                        </div>
-                    </div>
-                    
-                    
-                </td>
-            </tr>
-
-        </tbody>
-    </table>
+                    </span>
+                    <span data-bind="if: RawViewIsEnabled">
+                        <button data-bind="click: DisableRawView" >Collapse Raw</button>
+                    </span>
+                    <span >
+                        <button data-bind="click: $root.CreateNodeFromTemplate" >Create Node</button>
+                    </span>
+                </span>
+            </li>
+        </ul>
 </div>
 
 
