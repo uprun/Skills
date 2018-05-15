@@ -200,12 +200,12 @@
         };
 
         self.CopyNode = function(data) {
-            var toSend = ko.toJSON(data);
+            var toSend = ko.toJS(data);
             $.ajax({
                 type: "POST",
-                url: "Home/CreateNodeFromTemplate",
+                url: "Home/Copy",
                 data: {
-                    templateName: toSend
+                    model: toSend
                 },
                 success: function(data) {
                     var toAdd = new NodeModel(data);

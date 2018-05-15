@@ -6,11 +6,38 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Skills.Models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace Skills.Controllers
 {
     public class HomeController : Controller
     {
+        public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
+        {
+            try
+            {
+                var length = context.HttpContext.Request.ContentLength;
+                byte[] something = null;
+                context.HttpContext.Request.Body.Read(something , 0, (Int32) length);
+                MemoryStream memoryStream =  new MemoryStream();
+                memoryStream.Write(something, 0 , something.Length);
+                memoryStream.Flush();
+                StreamReader sr = new StreamReader(memoryStream);
+                
+                JsonTextReader converter = new Newtonsoft.Json.JsonTextReader(sr);
+                while(converter.Read())
+                {
+
+                }
+
+            }
+            catch
+            {}
+            
+
+            base.OnActionExecuting(context);
+        }
         private NodeModel CreateNode(SkillsContext context) 
         {
             NodeModel result = null;
@@ -61,7 +88,7 @@ namespace Skills.Controllers
         }
 
         private NodeModel CopyNode(SkillsContext context, long nodeId)
-        {// TODO: fix this
+        {
             var nodeSource = context
                 .Nodes
                 .Include(n => n.tags)
