@@ -1,5 +1,8 @@
 # Skills
 A dotnet 2.0 C# project for managing skills.
+
+#NOTE: this is pet project, I am not trying to make it very efficient, I just want to play with some ideas.
+
 The idea behind this project is that I want to keep track of progress in learning some topic, 
 but time to time I forget what I have learnt and usually do not keep links to articles which I already read.
 And I have a lot of topics in which I am interested in, so I would like to see them all grouped in one place.
@@ -15,5 +18,7 @@ And I have a lot of topics in which I am interested in, so I would like to see t
 #5 idea is that it should be something trully visual programming independent from any existing language but incorporating all great ideas in functional, object oriented, procedural and logical programming. So mix of LunaLang, Eve, c#, haskell, lisp, prolog, f# and Pascal.
 
 #6 idea is that it should be a all kind of knowledge base, it should support research process, programming and have history of changes.
+
+#7 idea is that git version tracking system is great but sometimes I see that it is not very well suited for code it is not aware of syntax underneath of files, like in case when two people are adding two new functions in same file it may result in conflict in file though their changes are independent; like in case when indentation is changed then it will be removal of one line and with replacing of it with new indented line. --> so I hope to come up with some node based programming and node based code change tracking system that are independent from file representation.
 
 And all these ideas I want to mix in this project will see what will be at finish of it.
