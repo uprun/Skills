@@ -12,4 +12,6 @@ And I have a lot of topics in which I am interested in, so I would like to see t
 
 #4 idea is that I am tired of inconsistent database and code states like you make some change in database and then code breaks because you deleted/changed type of some column and you then need to fix code as soon as possible because your application just does not work --> so I think that better to have immutable data and classes that is why there are nodes in my project which are representation of virtual memory.
 
+#5 idea is that it should be something trully visual programming independent from any existing language but incorporating all great ideas in functional, object oriented, procedural and logical programming. So mix of LunaLang, c#, haskell, lisp, prolog.
+
 And all these ideas I want to mix in this project will see what will be at finish of it.
