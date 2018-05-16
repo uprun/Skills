@@ -26,3 +26,5 @@ And I have a lot of topics in which I am interested in, so I would like to see t
 #9 usually I am interested in a lot of thing and because of this tabs in my browser look like fence ( /\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\ ...)  because of this I would like to have a context for each of topic I am interested in.
 
 And all these ideas I want to mix in this project will see what will be at finish of it.
+
+Inspired by graph knowledge AI labs in ONU, and talks of Alan Kay and Bret Victor, Eve-Lang and Luna-Lang.
