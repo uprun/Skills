@@ -21,4 +21,6 @@ And I have a lot of topics in which I am interested in, so I would like to see t
 
 #7 idea is that git version tracking system is great but sometimes I see that it is not very well suited for code it is not aware of syntax underneath of files, like in case when two people are adding two new functions in same file it may result in conflict in file though their changes are independent; like in case when indentation is changed then it will be removal of one line and with replacing of it with new indented line. --> so I hope to come up with some node based programming and node based code change tracking system that are independent from file representation.
 
+#8 if all above will be implemented then one optimization idea is to generate code straight from node representation.
+
 And all these ideas I want to mix in this project will see what will be at finish of it.
