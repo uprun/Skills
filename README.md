@@ -23,6 +23,6 @@ And I have a lot of topics in which I am interested in, so I would like to see t
 
 #8 if all above will be implemented then one optimization idea is to generate code straight from node representation.
 
-#9 usually I am interested in a lot of thing and because of this tabs in my browser look like fence ( /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\ ...)  because of this I would like to have a context for each of topic I am interested in.
+#9 usually I am interested in a lot of thing and because of this tabs in my browser look like fence ( /\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\/\\ ...)  because of this I would like to have a context for each of topic I am interested in.
 
 And all these ideas I want to mix in this project will see what will be at finish of it.
