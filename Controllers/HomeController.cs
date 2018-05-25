@@ -15,27 +15,6 @@ namespace Skills.Controllers
     {
         public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
         {
-            try
-            {
-                var length = context.HttpContext.Request.ContentLength;
-                byte[] something = null;
-                context.HttpContext.Request.Body.Read(something , 0, (Int32) length);
-                MemoryStream memoryStream =  new MemoryStream();
-                memoryStream.Write(something, 0 , something.Length);
-                memoryStream.Flush();
-                StreamReader sr = new StreamReader(memoryStream);
-                
-                JsonTextReader converter = new Newtonsoft.Json.JsonTextReader(sr);
-                while(converter.Read())
-                {
-
-                }
-
-            }
-            catch
-            {}
-            
-
             base.OnActionExecuting(context);
         }
         private NodeModel CreateNode(SkillsContext context) 
@@ -71,20 +50,23 @@ namespace Skills.Controllers
         private NodeModel AddTagToNode(SkillsContext context, long nodeId, string tag, string value)
         {
             //it definitely should create a new version of node
-            NodeModel result = null;
-            
-            
-                var nodeTags = context.Nodes.Where(x => x.id == nodeId).Select(x => x.tags).First();
-                nodeTags.Add(new TagModel
-                            {
-                                tag = tag,
-                                value = value
-                            });
-                context.SaveChanges();
-                var mainNode = context.Nodes.First( x => x.id == nodeId);
-                result = mainNode;
-            
-            return result;
+            var copiedNode = CopyNode(context, nodeId);
+
+            var mainNode = context
+                .Nodes
+                .Include(n => n.tags)
+                .FirstOrDefault(x => x.id == copiedNode.id);
+
+            mainNode
+                .tags
+                .Add(new TagModel
+                    {
+                        tag = tag,
+                        value = value
+                    });
+            context.SaveChanges();
+
+            return mainNode;
         }
 
         private NodeModel CopyNode(SkillsContext context, long nodeId)
@@ -287,7 +269,7 @@ namespace Skills.Controllers
             using(var context = new SkillsContext())
             {
                 
-                skills =  context.Nodes
+                skills = context.Nodes
                     .Include(n => n.tags)
                     .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null)
                     .ToArray();
@@ -303,8 +285,7 @@ namespace Skills.Controllers
 
             using(var context = new SkillsContext())
             {
-                
-                skills =  context.Nodes
+                skills = context.Nodes
                     .Include(n => n.tags)
                     .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "instanceTemplate") != null)
                     .ToArray();
@@ -316,6 +297,15 @@ namespace Skills.Controllers
         [HttpPost]
         public JsonResult CreateNodeFromTemplate(string templateName)
         {
+            //TODO: remake creation from template in such way that node is created at once
+            // When node is created from template then it has reference to it and it should have type name -- done
+            // there can be self reference in template for recursive types like "reference:leftSubtree=self" which is subs-
+            // tituted with reference to this node
+            // if there is "type" then it is real type name
+            // if there is "reference:type" then this is instance of the type
+            // if "reference:fieldName" reference node which is type then it mean that this field of specific type
+
+
             using(var context = new SkillsContext())
             {
                 var templateNode = context.Nodes
@@ -341,23 +331,6 @@ namespace Skills.Controllers
                 }
                 return Json(createdNode);
             }
-        }
-
-        [HttpPost]
-        public JsonResult AddUrlToProcess(long HostNodeId, string url)
-        {
-            using(var context = new SkillsContext())
-            {
-                var urlNode = CreateNode(context);
-                AddTagToNode(context, urlNode.id, "type", "url");
-                AddTagToNode(context, urlNode.id, "url", url);
-                AddTagToNode(context, HostNodeId, "rid:toProcess", urlNode.id.ToString());
-            }
-            
-            return Json(
-                (
-                 url
-            ));
         }
     }
 }
