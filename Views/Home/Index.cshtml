@@ -182,12 +182,12 @@
         };
 
         self.CreateNodeFromTemplate = function(data) {
-            var toSend = data.templateType();
+            var toSend = data.id();
             $.ajax({
                 type: "POST",
                 url: "Home/CreateNodeFromTemplate",
                 data: {
-                    templateName: toSend
+                    nodeId: toSend
                 },
                 success: function(data) {
                     var toAdd = new NodeModel(data);

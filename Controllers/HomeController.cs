@@ -295,7 +295,7 @@ namespace Skills.Controllers
         }
 
         [HttpPost]
-        public JsonResult CreateNodeFromTemplate(string templateName)
+        public JsonResult CreateNodeFromTemplate(int nodeId)
         {
             //TODO: remake creation from template in such way that node is created at once
             // When node is created from template then it has reference to it and it should have type name -- done
@@ -311,7 +311,7 @@ namespace Skills.Controllers
                 var templateNode = context.Nodes
                     .Include(n => n.tags)
                     .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "instanceTemplate") != null &&
-                        n.tags.FirstOrDefault(t => t.tag == "%type" && t.value == templateName) != null
+                        n.id == nodeId
                         )
                     .OrderByDescending(n => n.id)
                     .FirstOrDefault();
@@ -324,10 +324,10 @@ namespace Skills.Controllers
                         if(tag.tag.StartsWith("template:"))
                         {
                             string templateTag = tag.tag.Substring("template:".Length);
-                            AddTagToNode(context, createdNode.id, templateTag, tag.value);
+                            createdNode = AddTagToNode(context, createdNode.id, templateTag, tag.value);
                         }
                     }
-                    AddTagToNode(context, createdNode.id, "reference:type", templateNode.id.ToString());
+                    createdNode = AddTagToNode(context, createdNode.id, "reference:type", templateNode.id.ToString());
                 }
                 return Json(createdNode);
             }
