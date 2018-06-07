@@ -17,18 +17,12 @@ namespace Skills.Controllers
         {
             base.OnActionExecuting(context);
         }
-        private NodeModel CreateNode(SkillsContext context) 
+        private NodeModelUnsaved CreateNode(SkillsContext context) 
         {
-            NodeModel result = null;
-            
-                var mainNode = context.Nodes.Add(new NodeModel 
+            NodeModelUnsaved result = new NodeModelUnsaved 
                             {
                                 tags = new List<TagModel>()
-                            }
-                        );
-                context.SaveChanges();
-                result = mainNode.Entity;
-            
+                            };
             return result;
         }
 
@@ -47,29 +41,22 @@ namespace Skills.Controllers
 
 
         
-        private NodeModel AddTagToNode(SkillsContext context, long nodeId, string tag, string value)
+        private NodeModelUnsaved AddTagToNode(SkillsContext context, NodeModelUnsaved unsavedNodeModel, string tag, string value)
         {
-            //it definitely should create a new version of node
-            var copiedNode = CopyNode(context, nodeId);
+            if(unsavedNodeModel.tags.Exists(x => x.tag == tag))
+            {
+                throw new ArgumentException($"Cannot add tag {tag} because it is already exists.");
+            }
+            unsavedNodeModel.tags.Add( new TagModel
+            {
+                tag = tag,
+                value = value
+            });
 
-            var mainNode = context
-                .Nodes
-                .Include(n => n.tags)
-                .FirstOrDefault(x => x.id == copiedNode.id);
-
-            mainNode
-                .tags
-                .Add(new TagModel
-                    {
-                        tag = tag,
-                        value = value
-                    });
-            context.SaveChanges();
-
-            return mainNode;
+            return unsavedNodeModel;
         }
 
-        private NodeModel CopyNode(SkillsContext context, long nodeId)
+        private NodeModelUnsaved PrepareCopyOfNode(SkillsContext context, long nodeId)
         {
             var nodeSource = context
                 .Nodes
@@ -81,23 +68,46 @@ namespace Skills.Controllers
                 throw new IndexOutOfRangeException($"Provided node id \"{nodeId}\" is not available.");
             }
 
-            var mainNode = context
-                .Nodes
-                .Add(
-                    new NodeModel 
+            var prepared = new NodeModelUnsaved 
                     {
                         tags = nodeSource.tags.Select(x => 
-                            new TagModel
+                        {
+                            if(x.tag != "system-reference:previous" )
                             {
-                                tag = x.tag,
-                                value = x.value 
+                               return  new TagModel
+                                {
+                                    tag = x.tag,
+                                    value = x.value 
+                                };
                             }
+                            else
+                            {
+                                return  new TagModel
+                                {
+                                    tag = x.tag,
+                                    value = nodeId.ToString()
+                                };
+                            }
+                        }
                         )
                         .ToList()
-                    }
-                );
+                    };
+            if(!prepared.tags.Exists(x => x.tag == "system-reference:previous"))
+            {
+                prepared.tags.Add(new TagModel
+                {
+                    tag = "system-reference:previous",
+                    value = nodeId.ToString()
+                });
+            }
+            return prepared;
+        }
+
+        private NodeModel AddNode(SkillsContext context, NodeModelUnsaved node)
+        {
+            var added = context.Nodes.Add((NodeModel)node);
             context.SaveChanges();
-            return mainNode.Entity;
+            return added.Entity;
         }
         
         [HttpPost]
@@ -106,7 +116,8 @@ namespace Skills.Controllers
             NodeModel result = null;
             using(var context = new SkillsContext())
             {
-                result = AddTagToNode(context, model.id, tag, value);
+                var temp = PrepareCopyOfNode(context, model.id);
+                result = AddTagToNode(context, temp, tag, value);
             }
             return Json(result);
         }
@@ -117,7 +128,8 @@ namespace Skills.Controllers
             NodeModel result = null;
             using(var context = new SkillsContext())
             {
-                result = CopyNode(context, model.id);
+                var temp = PrepareCopyOfNode(context, model.id);
+                result = AddNode(context, temp);
             }
             return Json(result);
         }
@@ -193,7 +205,9 @@ namespace Skills.Controllers
                 {
                     foreach ( var node in context.Nodes.Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null))
                     {
-                        AddTagToNode(context, node.id, "field:list", "toProcess");
+                        var copied = PrepareCopyOfNode(context, node.id);
+                        AddTagToNode(context, copied, "field:list", "toProcess");
+                        AddNode(context, copied);
                         
                     }
 
@@ -210,21 +224,23 @@ namespace Skills.Controllers
                 {
                     {
                         var urlNode = CreateNode(context);
-                        AddTagToNode(context, urlNode.id, "type", "instanceTemplate");
-                        AddTagToNode(context, urlNode.id, "%type", "skill");
-                        AddTagToNode(context, urlNode.id, "templateVersion", "1.1.0");
-                        AddTagToNode(context, urlNode.id, "field:list", "toProcess");
-                        AddTagToNode(context, urlNode.id, "name", "");
-                        AddTagToNode(context, urlNode.id, "rid:previousVersion", "none");
+                        AddTagToNode(context, urlNode, "type", "instanceTemplate");
+                        AddTagToNode(context, urlNode, "%type", "skill");
+                        AddTagToNode(context, urlNode, "templateVersion", "1.1.0");
+                        AddTagToNode(context, urlNode, "field:list", "toProcess");
+                        AddTagToNode(context, urlNode, "name", "");
+                        AddTagToNode(context, urlNode, "rid:previousVersion", "none");
+                        AddNode(context, urlNode);
                     }
 
                     {
                         var urlNode = CreateNode(context);
-                        AddTagToNode(context, urlNode.id, "type", "instanceTemplate");
-                        AddTagToNode(context, urlNode.id, "%type", "url");
-                        AddTagToNode(context, urlNode.id, "templateVersion", "1.1.0");
-                        AddTagToNode(context, urlNode.id, "url", "");
-                        AddTagToNode(context, urlNode.id, "rid:previousVersion", "none");
+                        AddTagToNode(context, urlNode, "type", "instanceTemplate");
+                        AddTagToNode(context, urlNode, "%type", "url");
+                        AddTagToNode(context, urlNode, "templateVersion", "1.1.0");
+                        AddTagToNode(context, urlNode, "url", "");
+                        AddTagToNode(context, urlNode, "rid:previousVersion", "none");
+                        AddNode(context, urlNode);
                     }
                     
                     
@@ -318,16 +334,17 @@ namespace Skills.Controllers
                 NodeModel createdNode = null;
                 if(templateNode != null )
                 {
-                    createdNode = CreateNode(context);
+                    var temp = CreateNode(context);
                     foreach(var tag in templateNode.tags)
                     {
                         if(tag.tag.StartsWith("template:"))
                         {
                             string templateTag = tag.tag.Substring("template:".Length);
-                            createdNode = AddTagToNode(context, createdNode.id, templateTag, tag.value);
+                            temp = AddTagToNode(context, temp, templateTag, tag.value);
                         }
                     }
-                    createdNode = AddTagToNode(context, createdNode.id, "reference:type", templateNode.id.ToString());
+                    temp = AddTagToNode(context, temp, "reference:type", templateNode.id.ToString());
+                    createdNode = AddNode(context, temp);
                 }
                 return Json(createdNode);
             }
