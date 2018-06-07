@@ -105,7 +105,11 @@ namespace Skills.Controllers
 
         private NodeModel AddNode(SkillsContext context, NodeModelUnsaved node)
         {
-            var added = context.Nodes.Add((NodeModel)node);
+            var toSave = new NodeModel
+            {
+                tags = node.tags
+            };
+            var added = context.Nodes.Add(toSave);
             context.SaveChanges();
             return added.Entity;
         }
