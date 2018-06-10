@@ -13,10 +13,6 @@ namespace Skills.Controllers
 {
     public class HomeController : Controller
     {
-        public override void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
-        {
-            base.OnActionExecuting(context);
-        }
         private NodeModelUnsaved CreateNode(SkillsContext context) 
         {
             NodeModelUnsaved result = new NodeModelUnsaved 
@@ -26,23 +22,26 @@ namespace Skills.Controllers
             return result;
         }
 
-
-
         [HttpPost]
         public JsonResult MakeNewNode()
         {
             NodeModel result = null;
             using(var context = new SkillsContext())
             {
-                result = CreateNode(context);
+                var temp = CreateNode(context);
+                result = SaveNode(context, temp);
             }
             return Json(result);
         }
 
 
         
-        private NodeModelUnsaved AddTagToNode(SkillsContext context, NodeModelUnsaved unsavedNodeModel, string tag, string value)
+        private NodeModelUnsaved AddTagToNode(NodeModelUnsaved unsavedNodeModel, string tag, string value)
         {
+            if(tag == null)
+            {
+                throw new ArgumentNullException($"{nameof(tag)} is null");
+            }
             if(unsavedNodeModel.tags.Exists(x => x.tag == tag))
             {
                 throw new ArgumentException($"Cannot add tag {tag} because it is already exists.");
@@ -100,11 +99,17 @@ namespace Skills.Controllers
                     value = nodeId.ToString()
                 });
             }
+            else
+            {
+                var systemReferenceTag =  prepared.tags.First(x => x.tag == "system-reference:previous");
+                systemReferenceTag.value = nodeId.ToString();
+            }
             return prepared;
         }
 
-        private NodeModel AddNode(SkillsContext context, NodeModelUnsaved node)
+        private NodeModel SaveNode(SkillsContext context, NodeModelUnsaved node)
         {
+            //TODO: Add checks whether node has same type as referenced node
             var toSave = new NodeModel
             {
                 tags = node.tags
@@ -121,7 +126,8 @@ namespace Skills.Controllers
             using(var context = new SkillsContext())
             {
                 var temp = PrepareCopyOfNode(context, model.id);
-                result = AddTagToNode(context, temp, tag, value);
+                temp = AddTagToNode(temp, tag, value);
+                result = SaveNode(context, temp);
             }
             return Json(result);
         }
@@ -133,7 +139,7 @@ namespace Skills.Controllers
             using(var context = new SkillsContext())
             {
                 var temp = PrepareCopyOfNode(context, model.id);
-                result = AddNode(context, temp);
+                result = SaveNode(context, temp);
             }
             return Json(result);
         }
@@ -210,8 +216,8 @@ namespace Skills.Controllers
                     foreach ( var node in context.Nodes.Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null))
                     {
                         var copied = PrepareCopyOfNode(context, node.id);
-                        AddTagToNode(context, copied, "field:list", "toProcess");
-                        AddNode(context, copied);
+                        copied = AddTagToNode(copied, "field:list", "toProcess");
+                        SaveNode(context, copied);
                         
                     }
 
@@ -228,23 +234,23 @@ namespace Skills.Controllers
                 {
                     {
                         var urlNode = CreateNode(context);
-                        AddTagToNode(context, urlNode, "type", "instanceTemplate");
-                        AddTagToNode(context, urlNode, "%type", "skill");
-                        AddTagToNode(context, urlNode, "templateVersion", "1.1.0");
-                        AddTagToNode(context, urlNode, "field:list", "toProcess");
-                        AddTagToNode(context, urlNode, "name", "");
-                        AddTagToNode(context, urlNode, "rid:previousVersion", "none");
-                        AddNode(context, urlNode);
+                        urlNode = AddTagToNode(urlNode, "%type", "skill");
+                        urlNode = AddTagToNode(urlNode, "templateVersion", "1.1.0");
+                        urlNode = AddTagToNode(urlNode, "field:list", "toProcess");
+                        urlNode = AddTagToNode(urlNode, "type", "instanceTemplate");
+                        urlNode = AddTagToNode(urlNode, "name", "");
+                        urlNode = AddTagToNode(urlNode, "rid:previousVersion", "none");
+                        SaveNode(context, urlNode);
                     }
 
                     {
                         var urlNode = CreateNode(context);
-                        AddTagToNode(context, urlNode, "type", "instanceTemplate");
-                        AddTagToNode(context, urlNode, "%type", "url");
-                        AddTagToNode(context, urlNode, "templateVersion", "1.1.0");
-                        AddTagToNode(context, urlNode, "url", "");
-                        AddTagToNode(context, urlNode, "rid:previousVersion", "none");
-                        AddNode(context, urlNode);
+                        urlNode = AddTagToNode(urlNode, "type", "instanceTemplate");
+                        urlNode = AddTagToNode(urlNode, "%type", "url");
+                        urlNode = AddTagToNode(urlNode, "templateVersion", "1.1.0");
+                        urlNode = AddTagToNode(urlNode, "url", "");
+                        urlNode = AddTagToNode(urlNode, "rid:previousVersion", "none");
+                        SaveNode(context, urlNode);
                     }
                     
                     
@@ -266,6 +272,74 @@ namespace Skills.Controllers
                     context.VersionsApplied.Add( new VersionModel
                     { 
                         VersionApplied = "change_node_references",
+                        TimeApplied = DateTime.Now
+                    });
+                    context.SaveChanges();
+
+                }
+
+                if(context.VersionsApplied.FirstOrDefault(x => x.VersionApplied == "change_node_references2") == null)
+                {
+                    var skillNode = context
+                        .Nodes
+                        .Include(n => n.tags)
+                        .FirstOrDefault(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "instanceTemplate") != null &&
+                            n.tags.FirstOrDefault(t => t.tag == "templateVersion" && t.value == "1.1.0") != null &&
+                            n.tags.FirstOrDefault(t => t.tag == "%type" && t.value == "skill") != null
+                        );
+
+                    if(skillNode != null)
+                    {
+                        var allSkills = context
+                            .Nodes
+                            .Include(n => n.tags)
+                            .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null)
+                            .ToList();
+                        
+                        allSkills.ForEach(x => {
+                            var copy = PrepareCopyOfNode(context, x.id);
+                            copy = AddTagToNode(copy, "system-reference:type", skillNode.id.ToString());
+                            SaveNode(context, copy);
+                        });
+                    }
+
+                    context.VersionsApplied.Add( new VersionModel
+                    { 
+                        VersionApplied = "change_node_references2",
+                        TimeApplied = DateTime.Now
+                    });
+                    context.SaveChanges();
+
+                }
+
+                if(context.VersionsApplied.FirstOrDefault(x => x.VersionApplied == "change_node_references3") == null)
+                {
+                    var skillNode = context
+                        .Nodes
+                        .Include(n => n.tags)
+                        .FirstOrDefault(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "instanceTemplate") != null &&
+                            n.tags.FirstOrDefault(t => t.tag == "templateVersion" && t.value == "1.1.0") != null &&
+                            n.tags.FirstOrDefault(t => t.tag == "%type" && t.value == "skill") != null
+                        );
+
+                    if(skillNode != null)
+                    {
+                        var allSkills = context
+                            .Nodes
+                            .Include(n => n.tags)
+                            .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "skill") != null)
+                            .ToList();
+                        
+                        allSkills.ForEach(x => {
+                            var copy = PrepareCopyOfNode(context, x.id);
+                            copy = AddTagToNode(copy, "system-reference:type", skillNode.id.ToString());
+                            SaveNode(context, copy);
+                        });
+                    }
+
+                    context.VersionsApplied.Add( new VersionModel
+                    { 
+                        VersionApplied = "change_node_references3",
                         TimeApplied = DateTime.Now
                     });
                     context.SaveChanges();
@@ -317,10 +391,10 @@ namespace Skills.Controllers
         [HttpPost]
         public JsonResult CreateNodeFromTemplate(int nodeId)
         {
-            //TODO: remake creation from template in such way that node is created at once
+            // remake creation from template in such way that node is created at once -- done
             // When node is created from template then it has reference to it and it should have type name -- done
             // there can be self reference in template for recursive types like "reference:leftSubtree=self" which is subs-
-            // tituted with reference to this node
+            // tituted with reference to this node -- done
             // if there is "type" then it is real type name
             // if there is "reference:type" then this is instance of the type
             // if "reference:fieldName" reference node which is type then it mean that this field of specific type
@@ -344,11 +418,19 @@ namespace Skills.Controllers
                         if(tag.tag.StartsWith("template:"))
                         {
                             string templateTag = tag.tag.Substring("template:".Length);
-                            temp = AddTagToNode(context, temp, templateTag, tag.value);
+                            if(templateTag.StartsWith("reference:") && tag.value == "self")
+                            {
+                                temp = AddTagToNode(temp, templateTag, templateNode.id.ToString());
+                            }
+                            else
+                            {
+                                temp = AddTagToNode(temp, templateTag, tag.value);
+                            }
+                            
                         }
                     }
-                    temp = AddTagToNode(context, temp, "reference:type", templateNode.id.ToString());
-                    createdNode = AddNode(context, temp);
+                    temp = AddTagToNode(temp, "system-reference:type", templateNode.id.ToString());
+                    createdNode = SaveNode(context, temp);
                 }
                 return Json(createdNode);
             }
