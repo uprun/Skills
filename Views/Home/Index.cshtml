@@ -118,30 +118,6 @@
 
         self.templates = ko.observableArray([]);
 
-        self.newSkillName = ko.observable("");
-        self.AddNewSkill = function()
-        {
-            
-            var skillName = self.newSkillName();
-            var dataToSend = {
-                    skillName : skillName
-                };
-            $.ajax({
-                type: "POST",
-                url: "Home/NewSkill",
-                data: dataToSend,
-                success: function(retrievedData) {
-
-                    var newSkill = new NodeModel(retrievedData);
-                    self.skills.push(newSkill);
-                    self.newSkillName("");
-
-                },
-                dataType: "json"
-            });
-            
-        };
-
         
         self.RetrieveDataFromServer = function() {
             $.ajax({
@@ -280,8 +256,6 @@
     
 </div>
 <div>
-    <input type="text" data-bind="value: newSkillName" ></input>
-    <button data-bind="click: AddNewSkill" >add skill</button>
     <br>
     <br>
     <br>
