@@ -216,6 +216,19 @@
             });
 
         };
+
+        self.MakeNewEmptyNode = function() {
+            $.ajax({
+                type: "POST",
+                url: "Home/MakeNewNode",
+                success: function(data) {
+                    var toAdd = new NodeModel(data);
+                    self.skills.push(toAdd);
+
+                },
+                dataType: "json"
+            });
+        }
         
 
     };
@@ -276,6 +289,9 @@
     <button data-bind="click: applyMigrations" >apply Migrations</button>
 </div>
 <div>
+    <span >
+        <button data-bind="click: $root.MakeNewEmptyNode" >Create New Empty Node</button>
+    </span>
     <ul data-bind="foreach: templates">
             <li>
                 <span>
