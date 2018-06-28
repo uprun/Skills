@@ -133,18 +133,6 @@ namespace Skills.Controllers
         }
 
         [HttpPost]
-        public JsonResult Copy(NodeModel model)
-        {
-            NodeModel result = null;
-            using(var context = new SkillsContext())
-            {
-                var temp = PrepareCopyOfNode(context, model.id);
-                result = SaveNode(context, temp);
-            }
-            return Json(result);
-        }
-
-        [HttpPost]
         public JsonResult ApplyMigrations()
         {
             using(var context = new SkillsContext())

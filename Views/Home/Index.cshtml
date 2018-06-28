@@ -63,32 +63,6 @@
             self.ToProcessIsExpanded(false);
         }
 
-        self.UrlToAdd = ko.observable("");
-        self.AddUrlToProcess = function()
-        {
-            if(self.UrlToAdd())
-            {
-                $.ajax({
-                    type: "POST",
-                    url: "Home/AddUrlToProcess",
-                    data: {
-                        HostNodeId: self.id(),
-                        url : self.UrlToAdd()
-                    }
-                    ,
-                    success: function(retrievedData) {
-
-                       
-                        self.ToProcess.push(retrievedData.url);
-                        self.UrlToAdd("");
-
-                    },
-                    dataType: "json"
-                });
-            }
-            
-        };
-
         self.RawViewIsEnabled = ko.observable(false);
         self.EnableRawView = function(){
             self.RawViewIsEnabled(true);
@@ -96,6 +70,11 @@
         self.DisableRawView = function() {
             self.RawViewIsEnabled(false);
         };
+
+        self.tagToAdd = ko.observable("");
+        self.valueToAdd = ko.observable("");
+
+        
 
 
     };
@@ -175,24 +154,6 @@
 
         };
 
-        self.CopyNode = function(data) {
-            var toSend = ko.toJS(data);
-            $.ajax({
-                type: "POST",
-                url: "Home/Copy",
-                data: {
-                    model: toSend
-                },
-                success: function(data) {
-                    var toAdd = new NodeModel(data);
-                    self.skills.push(toAdd);
-
-                },
-                dataType: "json"
-            });
-
-        };
-
         self.MakeNewEmptyNode = function() {
             $.ajax({
                 type: "POST",
@@ -206,6 +167,22 @@
             });
         }
         
+        self.AddTag = function(data) {
+            $.ajax({
+                type: "POST",
+                url: "Home/AddTag",
+                data: {
+                    model: ko.toJS(data),
+                    tag: data.tagToAdd(),
+                    value: data.valueToAdd()
+                },
+                success: function(data) {
+                    var toAdd = new NodeModel(data);
+                    self.skills.push(toAdd);
+                },
+                dataType: "json"
+            });
+        }
 
     };
 
@@ -243,12 +220,13 @@
                                 <span data-bind="text: '}'"></span>
                             </li>
                         </ul>
+                        <br>
+                        <input data-bind="value: tagToAdd"></input><br>
+                        <input data-bind="value: valueToAdd"></input>
+                        <button data-bind="click: $root.AddTag" >AddTag</button>
                     </span>
                     <span data-bind="if: RawViewIsEnabled">
                         <button data-bind="click: DisableRawView" >Collapse Raw</button>
-                    </span>
-                    <span data-bind="if: RawViewIsEnabled">
-                        <button data-bind="click: $root.CopyNode" >Copy Node</button>
                     </span>
                 </span>
             </li>
