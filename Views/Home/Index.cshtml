@@ -47,13 +47,6 @@
         if(match){
             self.name = ko.observable(match.value());
         }
-        var templateTypeSearch = ko.utils.arrayFirst(self.tags(), function(item) {
-            return item.tag() == "%type";
-        });
-        if(templateTypeSearch) {
-            self.templateType = ko.observable(templateTypeSearch.value());
-        }
-
         
         self.ToProcessIsExpanded = ko.observable(false);
         self.ExpandToProcess = function() {
@@ -176,8 +169,8 @@
                     tag: data.tagToAdd(),
                     value: data.valueToAdd()
                 },
-                success: function(data) {
-                    var toAdd = new NodeModel(data);
+                success: function(receivedData) {
+                    var toAdd = new NodeModel(receivedData);
                     self.skills.push(toAdd);
                 },
                 dataType: "json"
@@ -191,8 +184,8 @@
                 data: {
                     model: ko.toJS(data),
                 },
-                success: function(data) {
-                    var toAdd = new NodeModel(data);
+                success: function(receivedData) {
+                    var toAdd = new NodeModel(receivedData);
                     self.skills.push(toAdd);
                 },
                 dataType: "json"
@@ -225,7 +218,6 @@
                     <span data-bind="if: RawViewIsEnabled">
                         <ul data-bind="foreach: tags">
                             <li >
-                                <!-- <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a> -->
                                 <span data-bind="text: '#'"></span>
                                 <span data-bind="text: id"></span>
                                 <span data-bind="text: '{'"></span>
@@ -284,7 +276,6 @@
                     <span data-bind="if: RawViewIsEnabled">
                         <ul data-bind="foreach: tags">
                             <li >
-                                <!-- <a data-bind="attr:{ href: $data, title: $data}, text: $data"></a> -->
                                 <span data-bind="text: '#'"></span>
                                 <span data-bind="text: id"></span>
                                 <span data-bind="text: '{'"></span>
