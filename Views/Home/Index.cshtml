@@ -184,6 +184,21 @@
             });
         }
 
+        self.ApplyChanges = function(data) {
+            $.ajax({
+                type: "POST",
+                url: "Home/ApplyChanges",
+                data: {
+                    model: ko.toJS(data),
+                },
+                success: function(data) {
+                    var toAdd = new NodeModel(data);
+                    self.skills.push(toAdd);
+                },
+                dataType: "json"
+            });
+        }
+
     };
 
     $(document).ready(function()
@@ -216,14 +231,21 @@
                                 <span data-bind="text: '{'"></span>
                                 <span data-bind="text: tag"></span>
                                 <span data-bind="text: '} -> {'"></span>
-                                <span data-bind="text: value"></span>
+                                <span data-bind="if: tag().startsWith('system-reference:')">
+                                    <span data-bind="text: value"></span>
+                                </span>
+                                <span data-bind="ifnot: tag().startsWith('system-reference:')">
+                                    <input data-bind="value: value"></input>
+                                </span>
+                                
                                 <span data-bind="text: '}'"></span>
                             </li>
                         </ul>
+                        <button data-bind="click: $root.ApplyChanges" >Apply Changes</button>
                         <br>
-                        <input data-bind="value: tagToAdd"></input><br>
-                        <input data-bind="value: valueToAdd"></input>
-                        <button data-bind="click: $root.AddTag" >AddTag</button>
+                        <span>tag: <input data-bind="value: tagToAdd"></input></span>
+                        <span> value: <input data-bind="value: valueToAdd"></input></span>
+                        <button data-bind="click: $root.AddTag" >Add Tag</button>
                     </span>
                     <span data-bind="if: RawViewIsEnabled">
                         <button data-bind="click: DisableRawView" >Collapse Raw</button>

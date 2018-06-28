@@ -133,6 +133,37 @@ namespace Skills.Controllers
         }
 
         [HttpPost]
+        public JsonResult ApplyChanges(NodeModel model)
+        {
+            NodeModel result = null;
+            using(var context = new SkillsContext())
+            {
+                var temp = PrepareCopyOfNode(context, model.id);
+                bool areChanges = false;
+                model.tags.ForEach(t => {
+                    if(!t.tag.StartsWith("system-reference:"))
+                    {
+                        var correspondingTag = temp.tags.First(x => x.tag == t.tag);
+                        if(correspondingTag.value != t.value)
+                        {
+                            areChanges = true;
+                            correspondingTag.value = t.value;
+                        }
+                    }
+                });
+                if(areChanges)
+                {
+                    result = SaveNode(context, temp);
+                }
+                else
+                {
+                    throw new Exception("No changes found.");
+                }
+            }
+            return Json(result);
+        }
+
+        [HttpPost]
         public JsonResult ApplyMigrations()
         {
             using(var context = new SkillsContext())
