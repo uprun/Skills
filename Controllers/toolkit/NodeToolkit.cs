@@ -92,6 +92,24 @@ namespace Skills.Controllers.toolkit
             return unsavedNodeModel;
         }
 
+        public NodeModelUnsaved RemoveTagFromNode(NodeModelUnsaved unsavedNodeModel, string tag)
+        {
+            if(tag == null)
+            {
+                throw new ArgumentNullException($"{nameof(tag)} is null");
+            }
+            if(!unsavedNodeModel.tags.Exists(x => x.tag == tag))
+            {
+                throw new ArgumentException($"Cannot remove tag {tag} because it does not exist.");
+            }
+            if(tag.StartsWith("system-reference:"))
+            {
+                throw new ArgumentOutOfRangeException($"Tag {tag} cannot be removed, because it starts with \"system-reference:\".");
+            }
+            unsavedNodeModel.tags = unsavedNodeModel.tags.Where(t => t.tag != tag).ToList();
+            return unsavedNodeModel;
+        }
+
         public NodeModelUnsaved CreateNode(SkillsContext context) 
         {
             NodeModelUnsaved result = new NodeModelUnsaved 
@@ -111,14 +129,39 @@ namespace Skills.Controllers.toolkit
                 model.tags.ForEach(t => {
                     if(!t.tag.StartsWith("system-reference:"))
                     {
-                        var correspondingTag = temp.tags.First(x => x.tag == t.tag);
-                        if(correspondingTag.value != t.value)
+                        var correspondingTag = temp.tags.FirstOrDefault(x => x.tag == t.tag);
+                        if(correspondingTag != null)
                         {
+                            // edit
+                            if(correspondingTag.value != t.value)
+                            {
+                                areChanges = true;
+                                correspondingTag.value = t.value;
+                            }
+                        }
+                        else
+                        {
+                            // creation of new tag
+                            temp = AddTagToNode(temp, t.tag, t.value);
                             areChanges = true;
-                            correspondingTag.value = t.value;
                         }
                     }
                 });
+                var toRemove = new Queue<TagModel> ();
+                temp.tags.ForEach(t => 
+                {
+                    var correspondingTag = model.tags.FirstOrDefault(x => x.tag == t.tag);
+                    if(correspondingTag == null)
+                    {
+                        toRemove.Enqueue(t);
+                        areChanges = true;
+                    }
+
+                });
+                foreach( var x in toRemove)
+                {
+                    temp = RemoveTagFromNode(temp, x.tag);
+                }
                 if(areChanges)
                 {
                     result = SaveNode(context, temp);
@@ -141,17 +184,6 @@ namespace Skills.Controllers.toolkit
             }
             return result;
 
-        }
-        public NodeModel AddTag(NodeModel model, string tag, string value)
-        {
-            NodeModel result = null;
-            using(var context = new SkillsContext())
-            {
-                var temp = PrepareCopyOfNode(context, model.id);
-                temp = AddTagToNode(temp, tag, value);
-                result = SaveNode(context, temp);
-            }
-            return result;
         }
 
         public NodeModel CreateNodeFromTemplate(int nodeId)

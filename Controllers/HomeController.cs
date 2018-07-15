@@ -22,12 +22,6 @@ namespace Skills.Controllers
         }
 
         [HttpPost]
-        public JsonResult AddTag(NodeModel model, string tag, string value)
-        {
-            return Json(new toolkit.NodeToolkit().AddTag(model, tag, value));
-        }
-
-        [HttpPost]
         public JsonResult ApplyChanges(NodeModel model)
         {
             return Json(new toolkit.NodeToolkit().ApplyChanges(model));

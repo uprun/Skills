@@ -41,6 +41,8 @@
             )
         );
 
+        self.removedTags = ko.observableArray();
+
         var match = ko.utils.arrayFirst(self.tags(), function(item) {
             return item.tag() == "name";
         });
@@ -67,7 +69,22 @@
         self.tagToAdd = ko.observable("");
         self.valueToAdd = ko.observable("");
 
-        
+        self.RemoveTag = function(refTag) {
+            self.tags.remove(refTag);
+            self.removedTags.push(refTag);
+        };
+
+        self.AddTag = function(data) {
+            var toAdd = new TagModel({
+                id: -1,
+                tag: data.tagToAdd(),
+                value: data.valueToAdd()
+                }
+                );
+            self.tags.push(
+                toAdd
+            );
+        };
 
 
     };
@@ -158,31 +175,24 @@
                 },
                 dataType: "json"
             });
-        }
+        };
         
-        self.AddTag = function(data) {
-            $.ajax({
-                type: "POST",
-                url: "Home/AddTag",
-                data: {
-                    model: ko.toJS(data),
-                    tag: data.tagToAdd(),
-                    value: data.valueToAdd()
-                },
-                success: function(receivedData) {
-                    var toAdd = new NodeModel(receivedData);
-                    self.skills.push(toAdd);
-                },
-                dataType: "json"
-            });
-        }
+        
+
+        
 
         self.ApplyChanges = function(data) {
+            var model = ko.toJS(data);
+            for(var x in model) {
+                if(typeof(model[x]) === "function") {
+                    model[x] = null;
+                }
+            }
             $.ajax({
                 type: "POST",
                 url: "Home/ApplyChanges",
                 data: {
-                    model: ko.toJS(data),
+                    model: model,
                 },
                 success: function(receivedData) {
                     var toAdd = new NodeModel(receivedData);
@@ -190,7 +200,9 @@
                 },
                 dataType: "json"
             });
-        }
+        };
+
+        
 
     };
 
@@ -218,6 +230,9 @@
                     <span data-bind="if: RawViewIsEnabled">
                         <ul data-bind="foreach: tags">
                             <li >
+                                <span data-bind="ifnot: tag().startsWith('system-reference:')">
+                                    <button data-bind="click: $parent.RemoveTag">RemoveTag</button>
+                                </span>
                                 <span data-bind="text: '#'"></span>
                                 <span data-bind="text: id"></span>
                                 <span data-bind="text: '{'"></span>
@@ -233,12 +248,15 @@
                                 <span data-bind="text: '}'"></span>
                             </li>
                         </ul>
-                        <button data-bind="click: $root.ApplyChanges" >Apply Changes</button>
                         <br>
                         <span>tag: <input data-bind="value: tagToAdd"></input></span>
                         <span> value: <input data-bind="value: valueToAdd"></input></span>
-                        <button data-bind="click: $root.AddTag" >Add Tag</button>
+                        <button data-bind="click: AddTag" >Add Tag</button>
+                        <br>
+                        <button data-bind="click: $parent.ApplyChanges" >Commit</button>
+                        <br>
                     </span>
+                    
                     <span data-bind="if: RawViewIsEnabled">
                         <button data-bind="click: DisableRawView" >Collapse Raw</button>
                     </span>
@@ -256,7 +274,7 @@
 </div>
 <div>
     <span >
-        <button data-bind="click: $root.MakeNewEmptyNode" >Create New Empty Node</button>
+        <button data-bind="click: MakeNewEmptyNode" >Create New Empty Node</button>
     </span>
     <ul data-bind="foreach: templates">
             <li>
@@ -289,7 +307,7 @@
                         <button data-bind="click: DisableRawView" >Collapse Raw</button>
                     </span>
                     <span >
-                        <button data-bind="click: $root.CreateNodeFromTemplate" >Create Node</button>
+                        <button data-bind="click: $parent.CreateNodeFromTemplate" >Create Node</button>
                     </span>
                 </span>
             </li>
