@@ -89,6 +89,15 @@
 
     };
 
+    function toJsWithoutFunctions(data) {
+        var model = ko.toJS(data);
+            for(var x in model) {
+                if(typeof(model[x]) === "function") {
+                    model[x] = null;
+                }
+            }
+        return model;
+    };
 
     function AvailableSkillsViewModel(data)
     {
@@ -147,12 +156,12 @@
         };
 
         self.CreateNodeFromTemplate = function(data) {
-            var toSend = data.id();
+            var toSend = toJsWithoutFunctions(data);
             $.ajax({
                 type: "POST",
                 url: "Home/CreateNodeFromTemplate",
                 data: {
-                    nodeId: toSend
+                    model: toSend
                 },
                 success: function(data) {
                     var toAdd = new NodeModel(data);
@@ -182,12 +191,7 @@
         
 
         self.ApplyChanges = function(data) {
-            var model = ko.toJS(data);
-            for(var x in model) {
-                if(typeof(model[x]) === "function") {
-                    model[x] = null;
-                }
-            }
+            var model = toJsWithoutFunctions(data);
             $.ajax({
                 type: "POST",
                 url: "Home/ApplyChanges",
@@ -215,6 +219,7 @@
     });
 </script>
 <script type="text/html" id="node-template">
+    <li>
     <span>
         <span data-bind="text: '#'"></span>
         <span data-bind="text: id"></span>
@@ -265,12 +270,10 @@
             <button data-bind="click: DisableRawView" >Collapse Raw</button>
         </span>
     </span>
+    </li>
 </script>
 <div>
-        <ul data-bind="foreach: skills">
-            <li data-bind="template: {name: 'node-template', data: $data}">
-                
-            </li>
+        <ul data-bind="template: {name: 'node-template', foreach: skills} ">
         </ul>
     
 </div>
@@ -285,9 +288,7 @@
     <span >
         <button data-bind="click: MakeNewEmptyNode" >Create New Empty Node</button>
     </span>
-    <ul data-bind="foreach: templates">
-            <li data-bind="template: {name: 'node-template', data: $data}">
-            </li>
+    <ul data-bind="template: {name: 'node-template', foreach: templates}">
         </ul>
 </div>
 

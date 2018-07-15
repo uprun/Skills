@@ -186,7 +186,7 @@ namespace Skills.Controllers.toolkit
 
         }
 
-        public NodeModel CreateNodeFromTemplate(int nodeId)
+        public NodeModel CreateNodeFromTemplate(long nodeId)
         {
             // remake creation from template in such way that node is created at once -- done
             // When node is created from template then it has reference to it and it should have type name -- done
@@ -201,11 +201,42 @@ namespace Skills.Controllers.toolkit
             {
                 var templateNode = context.Nodes
                     .Include(n => n.tags)
-                    .Where(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "instanceTemplate") != null &&
+                    .FirstOrDefault(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "instanceTemplate") != null &&
                         n.id == nodeId
-                        )
-                    .OrderByDescending(n => n.id)
-                    .FirstOrDefault();
+                        );
+                if(templateNode == null)
+                {
+                    var thisNode = context.Nodes
+                        .Include(n => n.tags)
+                        .FirstOrDefault(n => n.id == nodeId);
+                    if(thisNode != null)
+                    {
+                        var templateNodeIdString = thisNode.tags.FirstOrDefault(t => t.tag == "system-reference:type")?.value;
+                        if(templateNodeIdString != null)
+                        {
+                            long templateNodeId;
+                            var templateNodeIdParseResult = long.TryParse(templateNodeIdString, out templateNodeId);
+                            if(templateNodeIdParseResult)
+                            {
+                                templateNode = context.Nodes
+                                    .Include(n => n.tags)
+                                    .FirstOrDefault(n => n.tags.FirstOrDefault(t => t.tag == "type" && t.value == "instanceTemplate") != null &&
+                                        n.id == templateNodeId
+                                        );
+                            }
+                            else
+                            {
+                                // Failed value for node  reference
+                            }
+                            
+
+                        }
+                        else
+                        {
+                            // Node does not have type yet
+                        }
+                    }
+                }
                 NodeModel createdNode = null;
                 if(templateNode != null )
                 {

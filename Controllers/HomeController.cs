@@ -120,8 +120,9 @@ namespace Skills.Controllers
         }
 
         [HttpPost]
-        public JsonResult CreateNodeFromTemplate(int nodeId)
+        public JsonResult CreateNodeFromTemplate(NodeModel model)
         {
+            var nodeId = model.id;
             
                 return Json(new toolkit.NodeToolkit().CreateNodeFromTemplate(nodeId));
         }
