@@ -214,53 +214,62 @@
         viewModel.RetrieveTemplatesFromServer();
     });
 </script>
-<div>
-        <ul data-bind="foreach: skills">
-            <li>
-                <span>
+<script type="text/html" id="node-template">
+    <span>
+        <span data-bind="text: '#'"></span>
+        <span data-bind="text: id"></span>
+        <span data-bind="text: ','"></span>
+        <span data-bind="text: name"></span>
+    </span>
+    <span>
+        <span data-bind="ifnot: RawViewIsEnabled">
+            <button data-bind="click: EnableRawView" >View Raw</button>
+        </span>
+        <span data-bind="if: RawViewIsEnabled">
+            <ul data-bind="foreach: tags">
+                <li >
+                    <span data-bind="ifnot: tag().startsWith('system-reference:')">
+                        <button data-bind="click: $parent.RemoveTag">RemoveTag</button>
+                    </span>
                     <span data-bind="text: '#'"></span>
                     <span data-bind="text: id"></span>
-                    <span data-bind="text: ','"></span>
-                    <span data-bind="text: name"></span>
-                </span>
-                <span>
-                    <span data-bind="ifnot: RawViewIsEnabled">
-                        <button data-bind="click: EnableRawView" >View Raw</button>
+                    <span data-bind="text: '{'"></span>
+                    <span data-bind="text: tag"></span>
+                    <span data-bind="text: '} -> {'"></span>
+                    <span data-bind="if: tag().startsWith('system-reference:')">
+                        <span data-bind="text: value"></span>
                     </span>
-                    <span data-bind="if: RawViewIsEnabled">
-                        <ul data-bind="foreach: tags">
-                            <li >
-                                <span data-bind="ifnot: tag().startsWith('system-reference:')">
-                                    <button data-bind="click: $parent.RemoveTag">RemoveTag</button>
-                                </span>
-                                <span data-bind="text: '#'"></span>
-                                <span data-bind="text: id"></span>
-                                <span data-bind="text: '{'"></span>
-                                <span data-bind="text: tag"></span>
-                                <span data-bind="text: '} -> {'"></span>
-                                <span data-bind="if: tag().startsWith('system-reference:')">
-                                    <span data-bind="text: value"></span>
-                                </span>
-                                <span data-bind="ifnot: tag().startsWith('system-reference:')">
-                                    <input data-bind="value: value"></input>
-                                </span>
-                                
-                                <span data-bind="text: '}'"></span>
-                            </li>
-                        </ul>
-                        <br>
-                        <span>tag: <input data-bind="value: tagToAdd"></input></span>
-                        <span> value: <input data-bind="value: valueToAdd"></input></span>
-                        <button data-bind="click: AddTag" >Add Tag</button>
-                        <br>
-                        <button data-bind="click: $parent.ApplyChanges" >Commit</button>
-                        <br>
+                    <span data-bind="ifnot: tag().startsWith('system-reference:')">
+                        <input data-bind="value: value"></input>
                     </span>
                     
-                    <span data-bind="if: RawViewIsEnabled">
-                        <button data-bind="click: DisableRawView" >Collapse Raw</button>
-                    </span>
-                </span>
+                    <span data-bind="text: '}'"></span>
+                </li>
+            </ul>
+            <br>
+            <span>tag: <input data-bind="value: tagToAdd"></input></span>
+            <span> value: <input data-bind="value: valueToAdd"></input></span>
+            <button data-bind="click: AddTag" >Add Tag</button>
+            <br>
+            <button data-bind="click: $parent.ApplyChanges" >Commit</button>
+            <br>
+            <br>
+            <span>
+                <button data-bind="click: $parent.CreateNodeFromTemplate" >Create Of Same Type</button>
+            </span>
+            <br>
+            <br>
+        </span>
+        
+        <span data-bind="if: RawViewIsEnabled">
+            <button data-bind="click: DisableRawView" >Collapse Raw</button>
+        </span>
+    </span>
+</script>
+<div>
+        <ul data-bind="foreach: skills">
+            <li data-bind="template: {name: 'node-template', data: $data}">
+                
             </li>
         </ul>
     
@@ -277,39 +286,7 @@
         <button data-bind="click: MakeNewEmptyNode" >Create New Empty Node</button>
     </span>
     <ul data-bind="foreach: templates">
-            <li>
-                <span>
-                    <span data-bind="text: '#'"></span>
-                    <span data-bind="text: id"></span>
-                    <span data-bind="text: ','"></span>
-                    <span data-bind="text: name"></span>
-                </span>
-                
-                <span>
-                    <span data-bind="ifnot: RawViewIsEnabled">
-                        <button data-bind="click: EnableRawView" >View Raw</button>
-                    </span>
-                    
-                    <span data-bind="if: RawViewIsEnabled">
-                        <ul data-bind="foreach: tags">
-                            <li >
-                                <span data-bind="text: '#'"></span>
-                                <span data-bind="text: id"></span>
-                                <span data-bind="text: '{'"></span>
-                                <span data-bind="text: tag"></span>
-                                <span data-bind="text: '} -> {'"></span>
-                                <span data-bind="text: value"></span>
-                                <span data-bind="text: '}'"></span>
-                            </li>
-                        </ul>
-                    </span>
-                    <span data-bind="if: RawViewIsEnabled">
-                        <button data-bind="click: DisableRawView" >Collapse Raw</button>
-                    </span>
-                    <span >
-                        <button data-bind="click: $parent.CreateNodeFromTemplate" >Create Node</button>
-                    </span>
-                </span>
+            <li data-bind="template: {name: 'node-template', data: $data}">
             </li>
         </ul>
 </div>
