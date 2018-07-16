@@ -23,6 +23,7 @@ namespace Skills.Controllers.toolkit
 
             var prepared = new NodeModelUnsaved 
                     {
+                        CreatedFrom = nodeId,
                         tags = nodeSource.tags.Select(x => 
                         {
                             if(x.tag != "system-reference:previous" )
@@ -45,25 +46,29 @@ namespace Skills.Controllers.toolkit
                         )
                         .ToList()
                     };
-            if(!prepared.tags.Exists(x => x.tag == "system-reference:previous"))
-            {
-                prepared.tags.Add(new TagModel
-                {
-                    tag = "system-reference:previous",
-                    value = nodeId.ToString()
-                });
-            }
-            else
-            {
-                var systemReferenceTag =  prepared.tags.First(x => x.tag == "system-reference:previous");
-                systemReferenceTag.value = nodeId.ToString();
-            }
             return prepared;
         }
 
         public NodeModel SaveNode(SkillsContext context, NodeModelUnsaved node)
         {
             //TODO: Add checks whether node has same type as referenced node
+            if(node.CreatedFrom != null)
+            {
+                if(!node.tags.Exists(x => x.tag == "system-reference:previous"))
+                {
+                    node.tags.Add(new TagModel
+                    {
+                        tag = "system-reference:previous",
+                        value = node.CreatedFrom.Value.ToString()
+                    });
+                }
+                else
+                {
+                    var systemReferenceTag =  node.tags.First(x => x.tag == "system-reference:previous");
+                    systemReferenceTag.value = node.CreatedFrom.Value.ToString();
+                }
+            }
+            
             var toSave = new NodeModel
             {
                 tags = node.tags
