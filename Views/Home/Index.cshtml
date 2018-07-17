@@ -86,6 +86,10 @@
             );
         };
 
+       // ko.mapping.fromJS(data, self);
+
+       self.IsGeneric = ko.observable(data.isGeneric);
+
 
     };
 
@@ -224,6 +228,7 @@
         <span data-bind="text: '#'"></span>
         <span data-bind="text: id"></span>
         <span data-bind="text: ','"></span>
+        <span data-bind="if: IsGeneric()">Generic</span>
         <span data-bind="text: name"></span>
     </span>
     <span>
