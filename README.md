@@ -1,6 +1,8 @@
 # CodeName: Skills
 Tabs or spaces, don't worry there are no such identation thing here.
+
 Kernighan & Ritchie or ANSI bracket style, don't worry too there are no brackets in this language.
+
 How it is possible - easy you just build your code as a syntax tree.
 
 ------------------------------------------
