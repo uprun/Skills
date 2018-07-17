@@ -13,66 +13,66 @@ namespace Skills.Controllers.nodemigration
             using(var context = new SkillsContext())
             {
                 
-                if(context.VersionsApplied.FirstOrDefault(x => x.VersionApplied == "migrationToNodeRepresentation_attempt#1") == null)
-                {
-                    foreach ( var skill in context.Skills)
-                    {
-                        var mainNode = context.Nodes.Add(new NodeModel 
-                            {
-                                tags = new List<TagModel>()
-                            }
-                        );
-                        context.SaveChanges();
-                        mainNode.Entity.tags.Add(new TagModel
-                            {
-                                tag = "name",
-                                value = skill.SkillName
-                            }
-                        );
+                // if(context.VersionsApplied.FirstOrDefault(x => x.VersionApplied == "migrationToNodeRepresentation_attempt#1") == null)
+                // {
+                //     foreach ( var skill in context.Skills)
+                //     {
+                //         var mainNode = context.Nodes.Add(new NodeModel 
+                //             {
+                //                 tags = new List<TagModel>()
+                //             }
+                //         );
+                //         context.SaveChanges();
+                //         mainNode.Entity.tags.Add(new TagModel
+                //             {
+                //                 tag = "name",
+                //                 value = skill.SkillName
+                //             }
+                //         );
 
-                        mainNode.Entity.tags.Add(new TagModel
-                            {
-                                tag = "type",
-                                value = "skill"
-                            }
-                        );
-                        context.SaveChanges();
-                        var toProcess = context.Skills.Where(x => x.Id == skill.Id).Select(x => x.ToProcess).FirstOrDefault();
-                        foreach(var link in toProcess)
-                        {
-                            var linkToAdd = context.Nodes.Add(new NodeModel 
-                            {
-                                tags = new List<TagModel>()
-                            });
-                            context.SaveChanges();
-                            linkToAdd.Entity.tags.Add(new TagModel
-                            {
-                                tag = "url",
-                                value = link.Url
+                //         mainNode.Entity.tags.Add(new TagModel
+                //             {
+                //                 tag = "type",
+                //                 value = "skill"
+                //             }
+                //         );
+                //         context.SaveChanges();
+                //         var toProcess = context.Skills.Where(x => x.Id == skill.Id).Select(x => x.ToProcess).FirstOrDefault();
+                //         foreach(var link in toProcess)
+                //         {
+                //             var linkToAdd = context.Nodes.Add(new NodeModel 
+                //             {
+                //                 tags = new List<TagModel>()
+                //             });
+                //             context.SaveChanges();
+                //             linkToAdd.Entity.tags.Add(new TagModel
+                //             {
+                //                 tag = "url",
+                //                 value = link.Url
 
-                            });
-                            linkToAdd.Entity.tags.Add(new TagModel
-                            {
-                                tag = "type",
-                                value = "url"
-                            });
-                            mainNode.Entity.tags.Add(new TagModel
-                            {
-                                tag = "rid:toProcess",
-                                value = linkToAdd.Entity.id.ToString()
-                            });
-                            context.SaveChanges();
-                        }
-                    }
+                //             });
+                //             linkToAdd.Entity.tags.Add(new TagModel
+                //             {
+                //                 tag = "type",
+                //                 value = "url"
+                //             });
+                //             mainNode.Entity.tags.Add(new TagModel
+                //             {
+                //                 tag = "rid:toProcess",
+                //                 value = linkToAdd.Entity.id.ToString()
+                //             });
+                //             context.SaveChanges();
+                //         }
+                //     }
 
-                    context.VersionsApplied.Add( new VersionModel
-                    { 
-                        VersionApplied = "migrationToNodeRepresentation_attempt#1",
-                        TimeApplied = DateTime.Now
-                    });
-                    context.SaveChanges();
+                //     context.VersionsApplied.Add( new VersionModel
+                //     { 
+                //         VersionApplied = "migrationToNodeRepresentation_attempt#1",
+                //         TimeApplied = DateTime.Now
+                //     });
+                //     context.SaveChanges();
 
-                }
+                // }
 
                 if(context.VersionsApplied.FirstOrDefault(x => x.VersionApplied == "nodesAddToProcessField_attempt#1") == null)
                 {
