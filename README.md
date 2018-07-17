@@ -5,6 +5,8 @@ Kernighan & Ritchie or ANSI bracket style, don't worry too there are no brackets
 
 How it is possible - easy you just build your code as a syntax tree.
 
+Git, SVN, TFS or Mercurial hmmmm ofcourse git, but also a new source control system embedded in code.
+
 ------------------------------------------
 How it all began:
 ------------------------------------------
