@@ -228,13 +228,13 @@
     </span>
     <span>
         <span data-bind="ifnot: RawViewIsEnabled">
-            <button data-bind="click: EnableRawView" >View Raw</button>
+            <button data-bind="click: EnableRawView" >View</button>
         </span>
         <span data-bind="if: RawViewIsEnabled">
             <ul data-bind="foreach: tags">
                 <li >
                     <span data-bind="ifnot: tag().startsWith('system-reference:')">
-                        <button data-bind="click: $parent.RemoveTag">RemoveTag</button>
+                        <button data-bind="click: $parent.RemoveTag">Remove</button>
                     </span>
                     <span data-bind="text: '#'"></span>
                     <span data-bind="text: id"></span>
@@ -252,11 +252,11 @@
                 </li>
             </ul>
             <br>
-            <span>tag: <input data-bind="value: tagToAdd"></input></span>
+            <span>field: <input data-bind="value: tagToAdd"></input></span>
             <span> value: <input data-bind="value: valueToAdd"></input></span>
-            <button data-bind="click: AddTag" >Add Tag</button>
+            <button data-bind="click: AddTag" >Add</button>
             <br>
-            <button data-bind="click: $parent.ApplyChanges" >Commit</button>
+            <button data-bind="click: $parent.ApplyChanges" >Make Snapshot</button>
             <br>
             <br>
             <span>
@@ -267,7 +267,7 @@
         </span>
         
         <span data-bind="if: RawViewIsEnabled">
-            <button data-bind="click: DisableRawView" >Collapse Raw</button>
+            <button data-bind="click: DisableRawView" >Collapse</button>
         </span>
     </span>
     </li>
