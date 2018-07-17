@@ -1,4 +1,11 @@
-# Skills
+# CodeName: Skills
+Tabs or spaces, don't worry there are no such identation thing here.
+Kernighan & Ritchie or ANSI bracket style, don't worry too there are no brackets in this language.
+How it is possible - easy you just build your code as a syntax tree.
+
+------------------------------------------
+How it all began:
+------------------------------------------
 A dotnet 2.0 C# project for managing skills.
 
 #NOTE: this is pet project, I am not trying to make it very efficient, I just want to play with some ideas.
