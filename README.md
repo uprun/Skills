@@ -8,6 +8,9 @@ How it is possible - easy you just build your code as a syntax tree.
 ------------------------------------------
 How it all began:
 ------------------------------------------
+
+Everything starts as a small project for keeping notes, 8-9 months later I discovered that it could be a new programming language.
+
 A dotnet 2.0 C# project for managing skills.
 
 #NOTE: this is pet project, I am not trying to make it very efficient, I just want to play with some ideas.
