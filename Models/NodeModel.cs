@@ -14,6 +14,12 @@ namespace Skills.Models
             }
         }
 
+        public bool IsTemplate
+        {
+            get {
+                return tags?.Exists(t => t.tag.StartsWith("template:") ) ?? false;
+            }
+        }
         
     }
 }
