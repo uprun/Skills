@@ -19,7 +19,7 @@ A dotnet 2.0 C# project for managing skills.
 
 #NOTE: this is pet project, I am not trying to make it very efficient, I just want to play with some ideas.
 
-The idea behind this project is that I want to keep track of progress in learning some topic, 
+The idea behind this project is that I want to keep track of progress in learning some topics, 
 but time to time I forget what I have learnt and usually do not keep links to articles which I already read.
 And I have a lot of topics in which I am interested in, so I would like to see them all grouped in one place.
 
